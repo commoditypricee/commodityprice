@@ -1,10 +1,10 @@
 /**
- * COMMODITY PRICE TRACKER - FULLY OPTIMIZED
- * Featuring Batch Requests, Memory Caching, and Live Chart Mutation
+ * COMMODITY PRICE TRACKER - DIRECT API VERSION (NO CLOUDFLARE)
+ * Fault Tolerant & Debug Ready
  */
 
 // 1. API CONFIGURATION
-const API_KEY = "86Nedf4EOs5jHyEMnpZR3eXTeRfhSZhu"; 
+const API_KEY = "86Nedf4EOs5jHyEMnpZR3eXTeRfhSZhu"; // <-- Kendi şifreni buraya yapıştır
 const BASE_URL = "https://financialmodelingprep.com/api/v3";
 
 const commodities = [
@@ -15,117 +15,139 @@ const commodities = [
     { id: 'natgas', name: 'Natural Gas', ticker: 'NG=F' }
 ];
 
-// 2. GLOBAL STATE & CACHE
 let currentCommodity = commodities[0];
 let currentPeriod = '1D';
 let chartInstance = null;
-
-// Memory Cache to store historical data and save API calls
-// Structure: { 'GC=F': { '1D': {labels, prices}, '1M': {labels, prices} } }
 const chartCache = {}; 
 
 // ============================================================================
-// 3. INITIALIZATION & TIMER
+// 2. INITIALIZATION
 // ============================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
+    if (API_KEY === "BURAYA_ALDIĞIN_FMP_API_ANAHTARINI_YAZ" || API_KEY === "") {
+        alert("🚨 Lütfen script.js dosyasının en üstüne kendi API anahtarınızı ekleyin!");
+    }
+
+    console.log("🚀 Application started. Initializing...");
     initApp();
     setupEventListeners();
     
-    // Auto-update every 15 minutes
     setInterval(() => {
-        console.log("Timer triggered: Syncing live prices efficiently...");
+        console.log("⏰ Timer triggered: Syncing live prices...");
         syncLivePrices();
     }, 15 * 60 * 1000);
 });
 
 async function initApp() {
-    await syncLivePrices(); // Loads initial table data
-    await loadChartData(currentCommodity, currentPeriod); // Loads initial chart
+    try {
+        await syncLivePrices(); 
+        await loadChartData(currentCommodity, currentPeriod); 
+    } catch (error) {
+        console.error("❌ initApp caught a fatal error:", error);
+    }
 }
 
 // ============================================================================
-// 4. DATA FETCHING & SYNCING
+// 3. DATA FETCHING (WITH DIRECT API KEY)
 // ============================================================================
 
-// Fetches batch quotes and updates both the table and the live chart endpoint
 async function syncLivePrices() {
     const symbols = commodities.map(c => c.ticker).join(',');
+    // URL sonuna ?apikey= ekledik
     const endpoint = `${BASE_URL}/quote/${symbols}?apikey=${API_KEY}`;
     
+    console.log(`📡 Fetching live quotes...`);
+
     try {
         const response = await fetch(endpoint);
         const data = await response.json();
 
-        if (!Array.isArray(data)) throw new Error("API Limit reached or Invalid Data");
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${data["Error Message"] || "API Blocked Request"}`);
+        }
+
+        if (!Array.isArray(data)) {
+            throw new Error(data["Error Message"] || "Invalid data format received from API");
+        }
+
+        if (data.length === 0) {
+            throw new Error("API returned an empty array.");
+        }
 
         updateTableDOM(data);
         
-        // Find the newly fetched live price for the currently selected commodity
         const activeLiveData = data.find(item => item.symbol === currentCommodity.ticker);
         if (activeLiveData) {
             updateLiveChartPoint(activeLiveData.price);
         }
 
         updateTimestamp();
+
     } catch (error) {
-        console.error("Live sync failed:", error);
+        console.error("❌ syncLivePrices failed:", error.message);
+        document.getElementById('table-body').innerHTML = `<tr><td colspan="3" style="text-align:center; color:red;">Error loading live prices: ${error.message}</td></tr>`;
+        document.getElementById('last-update-time').innerText = "Update Failed";
     }
 }
 
-// Fetches historical data ONLY if it's not in the cache
 async function getHistoricalData(ticker, period) {
-    // 1. Check Cache
     if (chartCache[ticker] && chartCache[ticker][period]) {
-        console.log(`Loaded ${period} data for ${ticker} from CACHE`);
+        console.log(`📦 Loaded ${period} data for ${ticker} from CACHE`);
         return chartCache[ticker][period];
     }
 
-    // 2. If not in cache, fetch from API
-    console.log(`Fetching ${period} data for ${ticker} from API...`);
-    let endpoint = '';
-    let dataPointsLimit = 0;
+    // URL sonuna ?apikey= ekledik
+    let endpoint = period === '1D' 
+        ? `${BASE_URL}/historical-chart/15min/${ticker}?apikey=${API_KEY}` 
+        : `${BASE_URL}/historical-price-full/${ticker}?apikey=${API_KEY}`;
 
-    if (period === '1D') {
-        endpoint = `${BASE_URL}/historical-chart/15min/${ticker}?apikey=${API_KEY}`;
-        dataPointsLimit = 40;
-    } else {
-        endpoint = `${BASE_URL}/historical-price-full/${ticker}?apikey=${API_KEY}`;
-        switch(period) {
-            case '1M': dataPointsLimit = 22; break;
-            case '3M': dataPointsLimit = 65; break;
-            case '6M': dataPointsLimit = 130; break;
-            case '1Y': dataPointsLimit = 252; break;
-            case '3Y': dataPointsLimit = 756; break;
-            case '5Y': dataPointsLimit = 1260; break;
-            default: dataPointsLimit = 30;
+    console.log(`📡 Fetching historical data for ${period}...`);
+
+    try {
+        const response = await fetch(endpoint);
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${data["Error Message"] || "API Blocked Request"}`);
         }
+
+        let rawData = [];
+        if (period === '1D') {
+            if (!Array.isArray(data)) throw new Error(data["Error Message"] || "Intraday data is not an array");
+            rawData = data.slice(0, 40);
+        } else {
+            if (!data.historical || !Array.isArray(data.historical)) {
+                throw new Error(data["Error Message"] || "Historical data is missing");
+            }
+            let limit = period === '1M' ? 22 : period === '3M' ? 65 : period === '6M' ? 130 : period === '1Y' ? 252 : period === '3Y' ? 756 : 1260;
+            rawData = data.historical.slice(0, limit);
+        }
+
+        rawData.reverse(); // Eskiden yeniye sırala
+
+        const labels = rawData.map(item => {
+            const dateObj = new Date(item.date);
+            if (period === '1D') return `${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`;
+            if (period === '1Y' || period === '3Y' || period === '5Y') return `${dateObj.toLocaleString('en-US', { month: 'short' })} '${dateObj.getFullYear().toString().substr(-2)}`;
+            return `${dateObj.getDate()} ${dateObj.toLocaleString('en-US', { month: 'short' })}`;
+        });
+
+        const prices = rawData.map(item => item.close);
+
+        if (!chartCache[ticker]) chartCache[ticker] = {};
+        chartCache[ticker][period] = { labels, prices };
+
+        return chartCache[ticker][period];
+
+    } catch (error) {
+        console.error(`❌ getHistoricalData failed:`, error.message);
+        throw error; 
     }
-
-    const response = await fetch(endpoint);
-    const data = await response.json();
-
-    let rawData = period === '1D' ? data.slice(0, dataPointsLimit) : (data.historical ? data.historical.slice(0, dataPointsLimit) : []);
-    rawData.reverse(); // API gives newest first, we need oldest first for chart
-
-    const labels = rawData.map(item => {
-        const dateObj = new Date(item.date);
-        if (period === '1D') return `${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`;
-        if (period === '1Y' || period === '3Y' || period === '5Y') return `${dateObj.toLocaleString('en-US', { month: 'short' })} '${dateObj.getFullYear().toString().substr(-2)}`;
-        return `${dateObj.getDate()} ${dateObj.toLocaleString('en-US', { month: 'short' })}`;
-    });
-
-    const prices = rawData.map(item => item.close);
-
-    // 3. Save to Cache
-    if (!chartCache[ticker]) chartCache[ticker] = {};
-    chartCache[ticker][period] = { labels, prices };
-
-    return chartCache[ticker][period];
 }
 
 // ============================================================================
-// 5. DOM & CHART UPDATES
+// 4. UI UPDATES
 // ============================================================================
 
 function updateTableDOM(apiDataArray) {
@@ -160,44 +182,43 @@ async function selectCommodity(commodity) {
     if (currentCommodity.id === commodity.id) return;
     currentCommodity = commodity;
     
-    // Refresh table immediately to update the highlighted row, then load chart
-    syncLivePrices(); 
-    loadChartData(currentCommodity, currentPeriod);
+    document.getElementById('chart-title').innerText = `Loading data for ${commodity.name}...`;
+    await syncLivePrices(); 
+    await loadChartData(currentCommodity, currentPeriod);
 }
 
 async function loadChartData(commodity, period) {
-    document.getElementById('chart-title').innerText = `Loading data for ${commodity.name}...`;
+    const titleEl = document.getElementById('chart-title');
+    titleEl.innerText = `Loading data for ${commodity.name}...`;
     
-    const chartData = await getHistoricalData(commodity.ticker, period);
-    
-    document.getElementById('chart-title').innerText = `${commodity.name} (${commodity.ticker})`;
-    
-    // We clone the arrays because Chart.js mutates them, which would corrupt our cache
-    renderChart([...chartData.labels], [...chartData.prices]);
+    try {
+        const chartData = await getHistoricalData(commodity.ticker, period);
+        titleEl.innerText = `${commodity.name} (${commodity.ticker})`;
+        renderChart([...chartData.labels], [...chartData.prices]);
+    } catch (error) {
+        titleEl.innerHTML = `<span style="color: red;">Failed to load chart: ${error.message}</span>`;
+        if (chartInstance) {
+            chartInstance.destroy();
+            chartInstance = null;
+        }
+    }
 }
 
-// Mutates the existing chart dynamically without a page reload or API call
 function updateLiveChartPoint(newPrice) {
     if (!chartInstance) return;
-
     const dataPoints = chartInstance.data.datasets[0].data;
-    
-    // Replace the very last historical point with the live price
     dataPoints[dataPoints.length - 1] = newPrice;
 
-    // Recalculate color dynamically (Green if overall trend is up, Red if down)
     const startPrice = dataPoints[0];
     const isPositive = newPrice >= startPrice;
     
     chartInstance.data.datasets[0].borderColor = isPositive ? '#198754' : '#dc3545';
     chartInstance.data.datasets[0].backgroundColor = isPositive ? 'rgba(25, 135, 84, 0.1)' : 'rgba(220, 53, 69, 0.1)';
-
-    chartInstance.update(); // Smoothly animates the new data point!
+    chartInstance.update(); 
 }
 
 function renderChart(labels, dataPoints) {
     const ctx = document.getElementById('commodityChart').getContext('2d');
-
     if (chartInstance) chartInstance.destroy();
 
     const startPrice = dataPoints[0];
@@ -248,17 +269,12 @@ function renderChart(labels, dataPoints) {
     });
 }
 
-// ============================================================================
-// 6. EVENT LISTENERS & UTILITIES
-// ============================================================================
-
 function setupEventListeners() {
     const buttons = document.querySelectorAll('.filter-btn');
     buttons.forEach(btn => {
         btn.addEventListener('click', (e) => {
             buttons.forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
-            
             currentPeriod = e.target.getAttribute('data-period');
             loadChartData(currentCommodity, currentPeriod);
         });
