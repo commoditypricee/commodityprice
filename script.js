@@ -1,11 +1,10 @@
 /**
- * COMMODITY PRICE TRACKER - DIRECT API VERSION (NO CLOUDFLARE)
- * Fault Tolerant & Debug Ready
+ * COMMODITY PRICE TRACKER - YAHOO FINANCE VERSION
+ * Bulletproof Error Handling, No API Key, CORS Proxy Enabled
  */
 
-// 1. API CONFIGURATION
-const API_KEY = "86Nedf4EOs5jHyEMnpZR3eXTeRfhSZhu"; // <-- Kendi şifreni buraya yapıştır
-const BASE_URL = "https://financialmodelingprep.com/api/v3";
+// 1. API CONFIGURATION (Yahoo Finance via CORS Proxy)
+const PROXY_URL = "https://corsproxy.io/?";
 
 const commodities = [
     { id: 'gold', name: 'Gold', ticker: 'GC=F' },
@@ -25,11 +24,7 @@ const chartCache = {};
 // ============================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (API_KEY === "86Nedf4EOs5jHyEMnpZR3eXTeRfhSZhuBURAYA_ALDIĞIN_FMP_API_ANAHTARINI_YAZ" || API_KEY === "") {
-        alert("🚨 Lütfen script.js dosyasının en üstüne kendi API anahtarınızı ekleyin!");
-    }
-
-    console.log("🚀 Application started. Initializing...");
+    console.log("🚀 Application started. Connecting to Yahoo Finance...");
     initApp();
     setupEventListeners();
     
@@ -44,96 +39,103 @@ async function initApp() {
         await syncLivePrices(); 
         await loadChartData(currentCommodity, currentPeriod); 
     } catch (error) {
-        console.error("❌ initApp caught a fatal error:", error);
+        console.error("❌ initApp fatal error:", error);
     }
 }
 
 // ============================================================================
-// 3. DATA FETCHING (WITH DIRECT API KEY)
+// 3. FAULT-TOLERANT DATA FETCHING (YAHOO FINANCE)
 // ============================================================================
 
 async function syncLivePrices() {
     const symbols = commodities.map(c => c.ticker).join(',');
-    // URL sonuna ?apikey= ekledik
-    const endpoint = `${BASE_URL}/quote/${symbols}?apikey=${API_KEY}`;
+    const targetUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols}`;
+    const endpoint = PROXY_URL + encodeURIComponent(targetUrl);
     
-    console.log(`📡 Fetching live quotes...`);
-
     try {
         const response = await fetch(endpoint);
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${data["Error Message"] || "API Blocked Request"}`);
-        }
-
-        if (!Array.isArray(data)) {
-            throw new Error(data["Error Message"] || "Invalid data format received from API");
-        }
-
-        if (data.length === 0) {
-            throw new Error("API returned an empty array.");
-        }
-
-        updateTableDOM(data);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
-        const activeLiveData = data.find(item => item.symbol === currentCommodity.ticker);
-        if (activeLiveData) {
-            updateLiveChartPoint(activeLiveData.price);
+        const data = await response.json();
+        
+        // Gelen verinin doğruluğunu kontrol et (Type Error önlemi)
+        const results = data?.quoteResponse?.result;
+        if (!Array.isArray(results) || results.length === 0) {
+            throw new Error("Invalid live data format from API");
         }
 
+        updateTableDOM(results);
+        
+        const activeLiveData = results.find(item => item.symbol === currentCommodity.ticker);
+        if (activeLiveData && activeLiveData.regularMarketPrice) {
+            updateLiveChartPoint(activeLiveData.regularMarketPrice);
+        }
         updateTimestamp();
 
     } catch (error) {
-        console.error("❌ syncLivePrices failed:", error.message);
-        document.getElementById('table-body').innerHTML = `<tr><td colspan="3" style="text-align:center; color:red;">Error loading live prices: ${error.message}</td></tr>`;
-        document.getElementById('last-update-time').innerText = "Update Failed";
+        console.error("❌ Live sync failed:", error.message);
+        document.getElementById('table-body').innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--danger-color); font-weight:bold;">Error loading live prices. Trying again later.</td></tr>`;
     }
 }
 
 async function getHistoricalData(ticker, period) {
     if (chartCache[ticker] && chartCache[ticker][period]) {
-        console.log(`📦 Loaded ${period} data for ${ticker} from CACHE`);
         return chartCache[ticker][period];
     }
 
-    // URL sonuna ?apikey= ekledik
-    let endpoint = period === '1D' 
-        ? `${BASE_URL}/historical-chart/15min/${ticker}?apikey=${API_KEY}` 
-        : `${BASE_URL}/historical-price-full/${ticker}?apikey=${API_KEY}`;
+    // Yahoo Finance için periyot haritalaması
+    let range = '1d';
+    let interval = '15m';
+    
+    switch(period) {
+        case '1M': range = '1mo'; interval = '1d'; break;
+        case '3M': range = '3mo'; interval = '1d'; break;
+        case '6M': range = '6mo'; interval = '1d'; break;
+        case '1Y': range = '1y'; interval = '1d'; break;
+        case '3Y': range = '3y'; interval = '1wk'; break;
+        case '5Y': range = '5y'; interval = '1wk'; break;
+    }
 
-    console.log(`📡 Fetching historical data for ${period}...`);
+    const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=${range}&interval=${interval}`;
+    const endpoint = PROXY_URL + encodeURIComponent(targetUrl);
 
     try {
         const response = await fetch(endpoint);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        
         const data = await response.json();
+        const result = data?.chart?.result?.[0];
 
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${data["Error Message"] || "API Blocked Request"}`);
+        // Gelen verinin eksiksiz olduğunu teyit et (Type Error önlemi)
+        if (!result || !result.timestamp || !result.indicators?.quote?.[0]?.close) {
+            throw new Error("Historical data is missing or malformed");
         }
 
-        let rawData = [];
-        if (period === '1D') {
-            if (!Array.isArray(data)) throw new Error(data["Error Message"] || "Intraday data is not an array");
-            rawData = data.slice(0, 40);
-        } else {
-            if (!data.historical || !Array.isArray(data.historical)) {
-                throw new Error(data["Error Message"] || "Historical data is missing");
+        const rawTimestamps = result.timestamp;
+        const rawPrices = result.indicators.quote[0].close;
+        
+        const labels = [];
+        const prices = [];
+
+        // Yahoo bazen boş (null) veri noktaları gönderir, bunları filtreliyoruz
+        for (let i = 0; i < rawPrices.length; i++) {
+            if (rawPrices[i] !== null) {
+                const dateObj = new Date(rawTimestamps[i] * 1000);
+                
+                // Etiketleri periyoda göre formatla
+                if (period === '1D') {
+                    labels.push(`${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`);
+                } else if (period === '1Y' || period === '3Y' || period === '5Y') {
+                    labels.push(`${dateObj.toLocaleString('en-US', { month: 'short' })} '${dateObj.getFullYear().toString().substr(-2)}`);
+                } else {
+                    labels.push(`${dateObj.getDate()} ${dateObj.toLocaleString('en-US', { month: 'short' })}`);
+                }
+                
+                prices.push(rawPrices[i]);
             }
-            let limit = period === '1M' ? 22 : period === '3M' ? 65 : period === '6M' ? 130 : period === '1Y' ? 252 : period === '3Y' ? 756 : 1260;
-            rawData = data.historical.slice(0, limit);
         }
 
-        rawData.reverse(); // Eskiden yeniye sırala
-
-        const labels = rawData.map(item => {
-            const dateObj = new Date(item.date);
-            if (period === '1D') return `${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`;
-            if (period === '1Y' || period === '3Y' || period === '5Y') return `${dateObj.toLocaleString('en-US', { month: 'short' })} '${dateObj.getFullYear().toString().substr(-2)}`;
-            return `${dateObj.getDate()} ${dateObj.toLocaleString('en-US', { month: 'short' })}`;
-        });
-
-        const prices = rawData.map(item => item.close);
+        if (prices.length === 0) throw new Error("No valid data points found.");
 
         if (!chartCache[ticker]) chartCache[ticker] = {};
         chartCache[ticker][period] = { labels, prices };
@@ -141,7 +143,7 @@ async function getHistoricalData(ticker, period) {
         return chartCache[ticker][period];
 
     } catch (error) {
-        console.error(`❌ getHistoricalData failed:`, error.message);
+        console.error(`❌ Historical data failed for ${period}:`, error.message);
         throw error; 
     }
 }
@@ -158,7 +160,11 @@ function updateTableDOM(apiDataArray) {
         const apiData = apiDataArray.find(item => item.symbol === comm.ticker);
         if (!apiData) return;
 
-        const isPositive = apiData.change >= 0;
+        const currentPrice = apiData.regularMarketPrice || 0;
+        const changeValue = apiData.regularMarketChange || 0;
+        const changePercent = apiData.regularMarketChangePercent || 0;
+        const isPositive = changeValue >= 0;
+
         const tr = document.createElement('tr');
         if (currentCommodity.id === comm.id) tr.classList.add('active-row');
         
@@ -169,9 +175,9 @@ function updateTableDOM(apiDataArray) {
                 <div class="commodity-name">${comm.name}</div>
                 <div style="font-size: 0.8rem; color: var(--text-secondary)">${comm.ticker}</div>
             </td>
-            <td class="price">$${apiData.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+            <td class="price">$${currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
             <td class="change ${isPositive ? 'positive' : 'negative'}">
-                ${isPositive ? '+' : ''}${apiData.change.toFixed(2)} (${isPositive ? '+' : ''}${apiData.changesPercentage.toFixed(2)}%)
+                ${isPositive ? '+' : ''}${changeValue.toFixed(2)} (${isPositive ? '+' : ''}${changePercent.toFixed(2)}%)
             </td>
         `;
         tbody.appendChild(tr);
@@ -183,8 +189,8 @@ async function selectCommodity(commodity) {
     currentCommodity = commodity;
     
     document.getElementById('chart-title').innerText = `Loading data for ${commodity.name}...`;
-    await syncLivePrices(); 
     await loadChartData(currentCommodity, currentPeriod);
+    syncLivePrices(); // Tablodaki mavi seçili satırı güncellemek için
 }
 
 async function loadChartData(commodity, period) {
@@ -196,7 +202,8 @@ async function loadChartData(commodity, period) {
         titleEl.innerText = `${commodity.name} (${commodity.ticker})`;
         renderChart([...chartData.labels], [...chartData.prices]);
     } catch (error) {
-        titleEl.innerHTML = `<span style="color: red;">Failed to load chart: ${error.message}</span>`;
+        // Çökmek yerine ekrana hata mesajı basıyoruz
+        titleEl.innerHTML = `<span style="color: var(--danger-color);">Data unavailable for ${commodity.name} (${period})</span>`;
         if (chartInstance) {
             chartInstance.destroy();
             chartInstance = null;
