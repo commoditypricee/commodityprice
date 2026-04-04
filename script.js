@@ -4,7 +4,7 @@
  */
 
 // 1. AYARLAR
-const WORKER_URL = "https://yahoo-proxy.SENIN-KULLANICI-ADIN.workers.dev"; // Kendi URL'ni yaz (Sonunda '/' olmasın)
+const WORKER_URL = "https://yahoo-proxy.commodityprice.workers.dev"; // Kendi URL'ni yaz (Sonunda '/' olmasın)
 const PROXY_SECRET = "CommoditySecure2026"; // Worker'daki şifre ile aynı olmak zorunda
 
 const commodities = [
