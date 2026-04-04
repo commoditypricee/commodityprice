@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Commodity Price Tracker</title>
+    <title>Commodity Pro Tracker</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,9 +15,14 @@
 </head>
 <body>
     <header class="header">
-        <div class="container">
-            <h1>Commodity Pro</h1>
-            <p>Real-time global market tracker</p>
+        <div class="container header-container">
+            <div class="logo-area">
+                <h1>Commodity Pro</h1>
+                <p>Real-time global market tracker</p>
+            </div>
+            <div class="clock-area" id="live-clock">
+                --
+            </div>
         </div>
     </header>
 
@@ -30,7 +35,7 @@
                         <thead>
                             <tr>
                                 <th>Commodity</th>
-                                <th class="text-right">Price (USD)</th>
+                                <th class="text-right">Price</th>
                                 <th class="text-right">24h Change</th>
                             </tr>
                         </thead>
@@ -63,8 +68,8 @@
             </div>
 
             <div class="card performance-card">
-                <h2>Performance Analysis</h2>
-                <div class="table-container">
+                <h2 id="perf-title">Price Performance</h2>
+                <div class="perf-table-container">
                     <table class="perf-table">
                         <thead>
                             <tr>
