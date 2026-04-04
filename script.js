@@ -25,7 +25,7 @@ const chartCache = {};
 // ============================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (API_KEY === "BURAYA_ALDIĞIN_FMP_API_ANAHTARINI_YAZ" || API_KEY === "") {
+    if (API_KEY === "86Nedf4EOs5jHyEMnpZR3eXTeRfhSZhuBURAYA_ALDIĞIN_FMP_API_ANAHTARINI_YAZ" || API_KEY === "") {
         alert("🚨 Lütfen script.js dosyasının en üstüne kendi API anahtarınızı ekleyin!");
     }
 
