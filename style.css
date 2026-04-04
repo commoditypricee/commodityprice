@@ -6,9 +6,7 @@
     --border-color: #e5e7eb;
     --primary-color: #2563eb;
     --success-color: #10b981;
-    --success-bg: rgba(16, 185, 129, 0.1);
     --danger-color: #ef4444;
-    --danger-bg: rgba(239, 68, 68, 0.1);
     --hover-bg: #f9fafb;
     --font-family: 'Inter', sans-serif;
     --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
@@ -30,27 +28,44 @@ body {
     padding: 0 24px;
 }
 
-/* Header */
+/* Header & Live Clock */
 .header {
     background-color: var(--card-bg);
-    padding: 24px 0;
+    padding: 20px 0;
     border-bottom: 1px solid var(--border-color);
     margin-bottom: 32px;
 }
 
-.header h1 { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em; }
-.header p { color: var(--text-secondary); font-size: 0.9rem; margin-top: 4px; }
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo-area h1 { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em; }
+.logo-area p { color: var(--text-secondary); font-size: 0.9rem; margin-top: 2px; }
+
+.clock-area {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background-color: var(--bg-color);
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    letter-spacing: 0.02em;
+}
 
 /* Layout */
 .main-content {
     display: grid;
-    grid-template-columns: 350px 1fr;
+    grid-template-columns: 360px 1fr; /* Sol menü biraz genişletildi (Scrollbar Fix) */
     gap: 24px;
     align-items: start;
     margin-bottom: 40px;
 }
 
-/* Cards Shared Styles */
+/* Cards */
 .sidebar section, .card {
     background-color: var(--card-bg);
     border-radius: 12px;
@@ -60,53 +75,73 @@ body {
 }
 
 .card { margin-bottom: 24px; }
-
 h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 20px; color: var(--text-primary); }
-
 .text-right { text-align: right !important; }
 
-/* Tables */
-.table-container { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; }
+/* Market Overview Table (Scrollbar FIXED) */
+.table-container { 
+    overflow: hidden; /* Scrollbar'ı tamamen gizler */
+    width: 100%;
+}
 
-thead th {
+#commodity-table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    table-layout: fixed; /* İçeriğin genişliği bozmasını engeller */
+}
+
+#commodity-table th, #commodity-table td {
+    white-space: nowrap; /* Yazıların alt satıra geçmesini önler */
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#commodity-table thead th {
     text-align: left;
-    padding: 12px 16px;
+    padding: 12px 8px;
     border-bottom: 1px solid var(--border-color);
     color: var(--text-secondary);
     font-weight: 500;
     font-size: 0.75rem;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
 }
 
-tbody td {
-    padding: 16px;
+#commodity-table tbody td {
+    padding: 14px 8px;
     border-bottom: 1px solid var(--border-color);
     font-size: 0.9rem;
     vertical-align: middle;
 }
 
-tbody tr:last-child td { border-bottom: none; }
-
-/* Sidebar Table Hover & Active */
+#commodity-table tbody tr:last-child td { border-bottom: none; }
 #commodity-table tbody tr { cursor: pointer; transition: background-color 0.2s ease; }
 #commodity-table tbody tr:hover { background-color: var(--hover-bg); }
-#commodity-table tbody tr.active-row {
-    background-color: #eff6ff;
-    border-left: 4px solid var(--primary-color);
-}
+#commodity-table tbody tr.active-row { background-color: #eff6ff; border-left: 4px solid var(--primary-color); }
 #commodity-table tbody tr.active-row td:first-child { padding-left: 12px; }
 
-/* Typograpgy in Tables */
 .commodity-name { font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;}
-.price { font-weight: 500; font-family: 'Inter', sans-serif; letter-spacing: -0.01em; }
+.price { font-weight: 500; font-family: 'Inter', monospace; letter-spacing: -0.02em; }
 .change { font-weight: 600; }
 .change.positive { color: var(--success-color); }
 .change.negative { color: var(--danger-color); }
 
-/* Performance Table Specific */
-.perf-table td { padding: 12px 16px; }
+/* Compact Performance Table */
+.perf-table-container { width: 100%; overflow: hidden; }
+.perf-table { width: 100%; border-collapse: collapse; margin-top: -10px; }
+.perf-table th {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+}
+.perf-table td {
+    padding: 10px 12px; /* Çok daha dar satır aralıkları */
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.85rem; /* Yazı fontu küçüldü */
+}
+.perf-table tbody tr:last-child td { border-bottom: none; }
 .perf-table strong { font-weight: 600; color: var(--text-primary); }
 
 /* Chart Section */
@@ -144,20 +179,12 @@ tbody tr:last-child td { border-bottom: none; }
 }
 
 .filter-btn:hover { color: var(--text-primary); }
-.filter-btn.active {
-    background-color: var(--card-bg);
-    color: var(--primary-color);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
+.filter-btn.active { background-color: var(--card-bg); color: var(--primary-color); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 
 .chart-container { position: relative; height: 380px; width: 100%; }
 
 /* Responsive */
 @media (max-width: 992px) {
     .main-content { grid-template-columns: 1fr; }
-}
-@media (max-width: 576px) {
-    .chart-header { flex-direction: column; align-items: flex-start; }
-    .timeframe-filters { width: 100%; justify-content: space-between; }
-    .filter-btn { padding: 6px 8px; }
+    .header-container { flex-direction: column; gap: 15px; text-align: center; }
 }
