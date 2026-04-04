@@ -1,10 +1,10 @@
 /**
- * COMMODITY PRICE TRACKER - YAHOO FINANCE VERSION
- * Bulletproof Error Handling, No API Key, CORS Proxy Enabled
+ * COMMODITY PRICE TRACKER - SERVERLESS PROXY ARCHITECTURE
+ * Bulletproof Error Handling, Custom Cloudflare Worker Proxy
  */
 
-// 1. API CONFIGURATION (Yahoo Finance via CORS Proxy)
-const PROXY_URL = "https://corsproxy.io/?";
+// 1. KENDİ WORKER URL'Nİ BURAYA YAPIŞTIR (Sonunda / işareti OLMASIN)
+const WORKER_URL = "https://yahoo-proxy.commodityprice.workers.dev";
 
 const commodities = [
     { id: 'gold', name: 'Gold', ticker: 'GC=F' },
@@ -24,7 +24,11 @@ const chartCache = {};
 // ============================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("🚀 Application started. Connecting to Yahoo Finance...");
+    if(WORKER_URL.includes("SENIN-KULLANICI-ADIN")) {
+        alert("🚨 Lütfen script.js dosyasındaki WORKER_URL kısmına kendi Cloudflare Worker linkinizi yazın.");
+    }
+
+    console.log("🚀 Application started. Connecting via Custom Proxy...");
     initApp();
     setupEventListeners();
     
@@ -44,13 +48,14 @@ async function initApp() {
 }
 
 // ============================================================================
-// 3. FAULT-TOLERANT DATA FETCHING (YAHOO FINANCE)
+// 3. FAULT-TOLERANT DATA FETCHING (VIA CUSTOM PROXY)
 // ============================================================================
 
 async function syncLivePrices() {
     const symbols = commodities.map(c => c.ticker).join(',');
-    const targetUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols}`;
-    const endpoint = PROXY_URL + encodeURIComponent(targetUrl);
+    
+    // İstekleri doğrudan kendi Cloudflare Worker'ımıza atıyoruz
+    const endpoint = `${WORKER_URL}/v7/finance/quote?symbols=${symbols}`;
     
     try {
         const response = await fetch(endpoint);
@@ -58,7 +63,6 @@ async function syncLivePrices() {
         
         const data = await response.json();
         
-        // Gelen verinin doğruluğunu kontrol et (Type Error önlemi)
         const results = data?.quoteResponse?.result;
         if (!Array.isArray(results) || results.length === 0) {
             throw new Error("Invalid live data format from API");
@@ -83,7 +87,6 @@ async function getHistoricalData(ticker, period) {
         return chartCache[ticker][period];
     }
 
-    // Yahoo Finance için periyot haritalaması
     let range = '1d';
     let interval = '15m';
     
@@ -96,8 +99,8 @@ async function getHistoricalData(ticker, period) {
         case '5Y': range = '5y'; interval = '1wk'; break;
     }
 
-    const targetUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?range=${range}&interval=${interval}`;
-    const endpoint = PROXY_URL + encodeURIComponent(targetUrl);
+    // İstekleri doğrudan kendi Cloudflare Worker'ımıza atıyoruz
+    const endpoint = `${WORKER_URL}/v8/finance/chart/${ticker}?range=${range}&interval=${interval}`;
 
     try {
         const response = await fetch(endpoint);
@@ -106,7 +109,6 @@ async function getHistoricalData(ticker, period) {
         const data = await response.json();
         const result = data?.chart?.result?.[0];
 
-        // Gelen verinin eksiksiz olduğunu teyit et (Type Error önlemi)
         if (!result || !result.timestamp || !result.indicators?.quote?.[0]?.close) {
             throw new Error("Historical data is missing or malformed");
         }
@@ -117,12 +119,10 @@ async function getHistoricalData(ticker, period) {
         const labels = [];
         const prices = [];
 
-        // Yahoo bazen boş (null) veri noktaları gönderir, bunları filtreliyoruz
         for (let i = 0; i < rawPrices.length; i++) {
             if (rawPrices[i] !== null) {
                 const dateObj = new Date(rawTimestamps[i] * 1000);
                 
-                // Etiketleri periyoda göre formatla
                 if (period === '1D') {
                     labels.push(`${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`);
                 } else if (period === '1Y' || period === '3Y' || period === '5Y') {
@@ -190,7 +190,7 @@ async function selectCommodity(commodity) {
     
     document.getElementById('chart-title').innerText = `Loading data for ${commodity.name}...`;
     await loadChartData(currentCommodity, currentPeriod);
-    syncLivePrices(); // Tablodaki mavi seçili satırı güncellemek için
+    syncLivePrices(); 
 }
 
 async function loadChartData(commodity, period) {
@@ -202,7 +202,6 @@ async function loadChartData(commodity, period) {
         titleEl.innerText = `${commodity.name} (${commodity.ticker})`;
         renderChart([...chartData.labels], [...chartData.prices]);
     } catch (error) {
-        // Çökmek yerine ekrana hata mesajı basıyoruz
         titleEl.innerHTML = `<span style="color: var(--danger-color);">Data unavailable for ${commodity.name} (${period})</span>`;
         if (chartInstance) {
             chartInstance.destroy();
