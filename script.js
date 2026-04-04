@@ -1,10 +1,11 @@
 /**
- * COMMODITY PRICE TRACKER - SERVERLESS PROXY ARCHITECTURE
- * Bulletproof Error Handling, Custom Cloudflare Worker Proxy
+ * COMMODITY PRICE TRACKER - SECURE CLOUDFLARE PROXY ARCHITECTURE
+ * Synchronized Authorization & Yahoo Finance Crumb Bypass
  */
 
-// 1. KENDİ WORKER URL'Nİ BURAYA YAPIŞTIR (Sonunda / işareti OLMASIN)
-const WORKER_URL = "https://yahoo-proxy.commodityprice.workers.dev";
+// 1. AYARLAR
+const WORKER_URL = "https://yahoo-proxy.SENIN-KULLANICI-ADIN.workers.dev"; // Kendi URL'ni yaz (Sonunda '/' olmasın)
+const PROXY_SECRET = "CommoditySecure2026"; // Worker'daki şifre ile aynı olmak zorunda
 
 const commodities = [
     { id: 'gold', name: 'Gold', ticker: 'GC=F' },
@@ -19,21 +20,28 @@ let currentPeriod = '1D';
 let chartInstance = null;
 const chartCache = {}; 
 
+// Proxy'e gönderilecek standart güvenlik başlıkları
+const fetchOptions = {
+    method: 'GET',
+    headers: {
+        'x-proxy-secret': PROXY_SECRET,
+        'Content-Type': 'application/json'
+    }
+};
+
 // ============================================================================
 // 2. INITIALIZATION
 // ============================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
     if(WORKER_URL.includes("SENIN-KULLANICI-ADIN")) {
-        alert("🚨 Lütfen script.js dosyasındaki WORKER_URL kısmına kendi Cloudflare Worker linkinizi yazın.");
+        alert("🚨 Lütfen script.js dosyasındaki WORKER_URL kısmını kendi Cloudflare adresinizle değiştirin.");
     }
 
-    console.log("🚀 Application started. Connecting via Custom Proxy...");
     initApp();
     setupEventListeners();
     
     setInterval(() => {
-        console.log("⏰ Timer triggered: Syncing live prices...");
         syncLivePrices();
     }, 15 * 60 * 1000);
 });
@@ -48,22 +56,20 @@ async function initApp() {
 }
 
 // ============================================================================
-// 3. FAULT-TOLERANT DATA FETCHING (VIA CUSTOM PROXY)
+// 3. SECURE DATA FETCHING
 // ============================================================================
 
 async function syncLivePrices() {
     const symbols = commodities.map(c => c.ticker).join(',');
-    
-    // İstekleri doğrudan kendi Cloudflare Worker'ımıza atıyoruz
     const endpoint = `${WORKER_URL}/v7/finance/quote?symbols=${symbols}`;
     
     try {
-        const response = await fetch(endpoint);
+        const response = await fetch(endpoint, fetchOptions); // Şifreli başlıklar eklendi
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
         const data = await response.json();
-        
         const results = data?.quoteResponse?.result;
+        
         if (!Array.isArray(results) || results.length === 0) {
             throw new Error("Invalid live data format from API");
         }
@@ -99,11 +105,10 @@ async function getHistoricalData(ticker, period) {
         case '5Y': range = '5y'; interval = '1wk'; break;
     }
 
-    // İstekleri doğrudan kendi Cloudflare Worker'ımıza atıyoruz
     const endpoint = `${WORKER_URL}/v8/finance/chart/${ticker}?range=${range}&interval=${interval}`;
 
     try {
-        const response = await fetch(endpoint);
+        const response = await fetch(endpoint, fetchOptions); // Şifreli başlıklar eklendi
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         
         const data = await response.json();
