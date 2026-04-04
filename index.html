@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commodity Price Tracker</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1>Commodity Price</h1>
+            <p>Real-time tracking of essential global commodities</p>
+        </div>
+    </header>
+
+    <main class="container main-content">
+        <section class="table-section">
+            <h2>Market Overview</h2>
+            <div class="table-container">
+                <table id="commodity-table">
+                    <thead>
+                        <tr>
+                            <th>Commodity</th>
+                            <th>Price (USD)</th>
+                            <th>24h Change</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        </tbody>
+                </table>
+            </div>
+            <p class="update-info">Auto-updates every 15 minutes. Last updated: <span id="last-update-time">--:--</span></p>
+        </section>
+
+        <section class="chart-section">
+            <div class="chart-header">
+                <h2 id="chart-title">Select a Commodity</h2>
+                
+                <div class="timeframe-filters" id="timeframe-buttons">
+                    <button class="filter-btn active" data-period="1D">1 Day</button>
+                    <button class="filter-btn" data-period="1M">1 Month</button>
+                    <button class="filter-btn" data-period="3M">3 Months</button>
+                    <button class="filter-btn" data-period="6M">6 Months</button>
+                    <button class="filter-btn" data-period="1Y">1 Year</button>
+                    <button class="filter-btn" data-period="3Y">3 Years</button>
+                    <button class="filter-btn" data-period="5Y">5 Years</button>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="commodityChart"></canvas>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
