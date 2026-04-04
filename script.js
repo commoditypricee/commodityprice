@@ -1,13 +1,12 @@
 /**
  * COMMODITY PRO - SECURE CLOUDFLARE PROXY ARCHITECTURE
- * Advanced UI, Performance Table, Black Grids & Deep Caching
+ * Dynamic Clock, Compact Performance Table, Bold Chart Lines
  */
 
-// 1. AYARLAR (PROXY YAPISI KESİNLİKLE KORUNDU)
-const WORKER_URL = "https://yahoo-proxy.commodityprice.workers.dev"; // Kendi URL'ni buraya yaz!
+// 1. AYARLAR (PROXY YAPISI)
+const WORKER_URL = "https://yahoo-proxy.commodityprice.workers.dev/"; // Kendi URL'ni buraya yaz!
 const PROXY_SECRET = "CommoditySecure2026"; 
 
-// Emojilerle zenginleştirilmiş data (Sadece UI için)
 const commodities = [
     { id: 'gold', name: 'Gold', icon: '🥇', ticker: 'GC=F' },
     { id: 'silver', name: 'Silver', icon: '🥈', ticker: 'SI=F' },
@@ -20,7 +19,7 @@ let currentCommodity = commodities[0];
 let currentPeriod = '1D';
 let chartInstance = null;
 const chartCache = {}; 
-let livePricesMap = {}; // Performans tablosu hesaplamaları için global canlı fiyat hafızası
+let livePricesMap = {}; 
 
 const fetchOptions = {
     method: 'GET',
@@ -31,7 +30,7 @@ const fetchOptions = {
 };
 
 // ============================================================================
-// 2. INITIALIZATION
+// 2. INITIALIZATION & LIVE CLOCK
 // ============================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -39,14 +38,30 @@ document.addEventListener('DOMContentLoaded', () => {
         alert("🚨 Lütfen script.js dosyasındaki WORKER_URL kısmını kendi Cloudflare adresinizle değiştirin.");
     }
 
+    startLiveClock(); // Canlı saati başlat
     initApp();
     setupEventListeners();
     
-    // Yalnızca arkaplanda veriyi günceller (Saat yazısı silindi)
     setInterval(() => {
         syncLivePrices();
     }, 15 * 60 * 1000);
 });
+
+// Canlı Saat ve Tarih Fonksiyonu
+function startLiveClock() {
+    const clockEl = document.getElementById('live-clock');
+    
+    function updateTime() {
+        const now = new Date();
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const dateStr = now.toLocaleDateString('en-US', dateOptions);
+        const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        clockEl.innerText = `${dateStr} | ${timeStr}`;
+    }
+    
+    updateTime(); // Sayfa açıldığında anında göster
+    setInterval(updateTime, 1000); // Her saniye güncelle
+}
 
 async function initApp() {
     try {
@@ -74,7 +89,6 @@ async function syncLivePrices() {
         
         if (!Array.isArray(results) || results.length === 0) throw new Error("Invalid live data format from API");
 
-        // Fiyatları global hafızaya al (Performans tablosu için lazım olacak)
         results.forEach(item => {
             livePricesMap[item.symbol] = item.regularMarketPrice;
         });
@@ -86,12 +100,11 @@ async function syncLivePrices() {
             updateLiveChartPoint(activeLiveData.regularMarketPrice);
         }
         
-        // Fiyatlar güncellendiği için Performans tablosunu da arka planda tazele
         updatePerformanceTable(currentCommodity);
 
     } catch (error) {
         console.error("❌ Live sync failed:", error.message);
-        document.getElementById('table-body').innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--danger-color); font-weight:bold;">Error loading live prices. Trying again later.</td></tr>`;
+        document.getElementById('table-body').innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--danger-color); font-weight:bold;">Error loading live prices.</td></tr>`;
     }
 }
 
@@ -182,7 +195,6 @@ function updateTableDOM(apiDataArray) {
         
         tr.onclick = () => selectCommodity(comm);
 
-        // İkonlar buraya eklendi
         tr.innerHTML = `
             <td>
                 <div class="commodity-name"><span style="font-size: 1.2rem;">${comm.icon}</span> ${comm.name}</div>
@@ -198,33 +210,35 @@ function updateTableDOM(apiDataArray) {
     });
 }
 
-// YENİ: Dinamik Performans Tablosu Algoritması
+// GÜNCELLENMİŞ: Kompakt Dinamik Performans Tablosu (3 Ay ve 3 Yıl silindi)
 async function updatePerformanceTable(commodity) {
-    const periods = ['1D', '1M', '3M', '6M', '1Y', '3Y', '5Y'];
+    // Tablo başlığını emtia adıyla dinamik değiştir
+    document.getElementById('perf-title').innerText = `${commodity.name} Price Performance`;
+
+    const fetchPeriods = ['1D', '1M', '6M', '1Y', '5Y'];
+    const displayNames = ['Today', '1 Month', '6 Months', '1 Year', '5 Years']; // Ekranda yazacak isimler
     const tbody = document.getElementById('perf-table-body');
     
-    // Tabloyu yükleme moduna al
-    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: var(--text-secondary); padding: 30px;">Analyzing performance data...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: var(--text-secondary); padding: 20px;">Analyzing data...</td></tr>';
 
     try {
         const currentPrice = livePricesMap[commodity.ticker];
         if (!currentPrice) return;
 
-        // Tüm periyotların geçmiş verilerini eşzamanlı (hızlı) çek veya önbellekten al
         const histDataArray = await Promise.all(
-            periods.map(p => getHistoricalData(commodity.ticker, p).catch(e => null))
+            fetchPeriods.map(p => getHistoricalData(commodity.ticker, p).catch(e => null))
         );
 
-        tbody.innerHTML = ''; // Yükleme yazısını sil
+        tbody.innerHTML = ''; 
         
-        periods.forEach((period, index) => {
+        fetchPeriods.forEach((period, index) => {
             const data = histDataArray[index];
+            const displayName = displayNames[index];
             const tr = document.createElement('tr');
             
             if (!data || data.prices.length === 0) {
-                tr.innerHTML = `<td><strong>${period}</strong></td><td colspan="2" class="text-right" style="color:var(--text-secondary)">Data unavailable</td>`;
+                tr.innerHTML = `<td><strong>${displayName}</strong></td><td colspan="2" class="text-right" style="color:var(--text-secondary)">Data unavailable</td>`;
             } else {
-                // Fiyat hesaplamaları (Güncel fiyat ile o periyodun en eski fiyatını karşılaştır)
                 const oldPrice = data.prices[0];
                 const change = currentPrice - oldPrice;
                 const changePct = (change / oldPrice) * 100;
@@ -234,7 +248,7 @@ async function updatePerformanceTable(commodity) {
                 const sign = isPositive ? '+' : '';
 
                 tr.innerHTML = `
-                    <td><strong>${period}</strong></td>
+                    <td><strong>${displayName}</strong></td>
                     <td class="price text-right ${colorClass}">${sign}$${Math.abs(change).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                     <td class="change text-right ${colorClass}">${sign}${Math.abs(changePct).toFixed(2)}%</td>
                 `;
@@ -252,13 +266,12 @@ async function selectCommodity(commodity) {
     
     document.getElementById('chart-title').innerText = `Loading ${commodity.name}...`;
     
-    // Grafiği, sol menüyü ve yeni Performans Tablosunu eşzamanlı güncelle
     syncLivePrices(); 
     loadChartData(currentCommodity, currentPeriod);
 }
 
 // ============================================================================
-// 5. CHART CHART.JS RENDERING (Black Grids & Pure Titles)
+// 5. CHART CHART.JS RENDERING (Bold & Opaque Lines)
 // ============================================================================
 
 async function loadChartData(commodity, period) {
@@ -267,7 +280,6 @@ async function loadChartData(commodity, period) {
     
     try {
         const chartData = await getHistoricalData(commodity.ticker, period);
-        // Sadece Emtia adını yazdır (Ticker, İkon vs yok)
         titleEl.innerText = `${commodity.name}`;
         renderChart([...chartData.labels], [...chartData.prices]);
     } catch (error) {
@@ -287,6 +299,7 @@ function updateLiveChartPoint(newPrice) {
     const startPrice = dataPoints[0];
     const isPositive = newPrice >= startPrice;
     
+    // Anlık fiyat güncellemelerinde de %100 opak tam renkler (Hex kodları) kullanıldı
     chartInstance.data.datasets[0].borderColor = isPositive ? '#10b981' : '#ef4444';
     chartInstance.data.datasets[0].backgroundColor = isPositive ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.05)';
     chartInstance.update(); 
@@ -307,9 +320,10 @@ function renderChart(labels, dataPoints) {
             datasets: [{
                 label: 'Price',
                 data: dataPoints,
+                // Çizgi renkleri kalın ve tamamen opak (Alpha/saydamlık kaldırıldı)
                 borderColor: isPositive ? '#10b981' : '#ef4444',
                 backgroundColor: isPositive ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.05)',
-                borderWidth: 2.5,
+                borderWidth: 3.5, // Çizgi oldukça kalınlaştırıldı
                 pointRadius: 0,
                 pointHoverRadius: 6,
                 fill: true,
@@ -338,20 +352,12 @@ function renderChart(labels, dataPoints) {
             interaction: { mode: 'nearest', axis: 'x', intersect: false },
             scales: {
                 x: { 
-                    grid: { 
-                        display: true, 
-                        color: '#000000', // Siyah dikey çizgiler
-                        drawBorder: true
-                    },
+                    grid: { display: true, color: '#000000', drawBorder: true },
                     ticks: { font: { family: 'Inter' } }
                 },
                 y: {
                     border: { display: false },
-                    grid: { 
-                        display: true,
-                        color: '#000000', // Siyah yatay çizgiler
-                        drawBorder: true
-                    },
+                    grid: { display: true, color: '#000000', drawBorder: true },
                     ticks: { 
                         font: { family: 'Inter', weight: '500' },
                         callback: function(value) { return '$' + value; } 
