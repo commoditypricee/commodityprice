@@ -1,136 +1,142 @@
 /**
- * COMMODITY PRICE TRACKER
- * Full-stack vanilla JS implementation.
+ * COMMODITY PRICE TRACKER - FULLY OPTIMIZED
+ * Featuring Batch Requests, Memory Caching, and Live Chart Mutation
  */
 
-// 1. COMMODITY CONFIGURATION
+// 1. API CONFIGURATION
+const API_KEY = "86Nedf4EOs5jHyEMnpZR3eXTeRfhSZhu"; 
+const BASE_URL = "https://financialmodelingprep.com/api/v3";
+
 const commodities = [
-    { id: 'gold', name: 'Gold', symbol: 'XAU/USD', basePrice: 2350 },
-    { id: 'silver', name: 'Silver', symbol: 'XAG/USD', basePrice: 28 },
-    { id: 'copper', name: 'Copper', symbol: 'HG/USD', basePrice: 4.5 },
-    { id: 'brent', name: 'Brent Oil', symbol: 'BZ/USD', basePrice: 85 },
-    { id: 'natgas', name: 'Natural Gas', symbol: 'NG/USD', basePrice: 2.2 }
+    { id: 'gold', name: 'Gold', ticker: 'GC=F' },
+    { id: 'silver', name: 'Silver', ticker: 'SI=F' },
+    { id: 'copper', name: 'Copper', ticker: 'HG=F' },
+    { id: 'brent', name: 'Brent Oil', ticker: 'BZ=F' },
+    { id: 'natgas', name: 'Natural Gas', ticker: 'NG=F' }
 ];
 
-// Global State
-let currentCommodity = commodities[0]; // Default to Gold
-let currentPeriod = '1D'; // Default to 1 Day
+// 2. GLOBAL STATE & CACHE
+let currentCommodity = commodities[0];
+let currentPeriod = '1D';
 let chartInstance = null;
 
-// ============================================================================
-// 2. MOCK API SERVICE (To simulate real backend/API fetching without limits)
-// Replace this section with real fetch endpoints when you get an API key.
-// ============================================================================
-class MockAPI {
-    static async fetchData(commodityId, period) {
-        // Simulating network delay
-        await new Promise(resolve => setTimeout(resolve, 300));
-
-        const commodity = commodities.find(c => c.id === commodityId);
-        if (!commodity) throw new Error("Commodity not found");
-
-        const dataPoints = this.getPointsForPeriod(period);
-        const labels = [];
-        const prices = [];
-        
-        let currentSimPrice = commodity.basePrice;
-        
-        // Volatility multiplier based on period
-        const volatility = period.includes('Y') ? 0.05 : 0.005; 
-
-        // Generate mock historical data backwards
-        const now = new Date();
-        for (let i = dataPoints; i >= 0; i--) {
-            // Determine time subtraction based on period
-            let dateObj = new Date(now);
-            if (period === '1D') dateObj.setHours(now.getHours() - i);
-            else if (period === '1M' || period === '3M' || period === '6M') dateObj.setDate(now.getDate() - i);
-            else dateObj.setMonth(now.getMonth() - i); // Years
-
-            // Format label
-            labels.push(this.formatDateLabel(dateObj, period));
-
-            // Random walk logic for price
-            const change = currentSimPrice * (Math.random() * volatility * 2 - volatility);
-            currentSimPrice = currentSimPrice + change;
-            prices.push(currentSimPrice.toFixed(2));
-        }
-
-        // Return standard API response structure
-        return {
-            symbol: commodity.symbol,
-            latestPrice: parseFloat(prices[prices.length - 1]),
-            previousClose: parseFloat(prices[prices.length - Math.min(24, prices.length)]), // Rough 24h ago
-            history: {
-                labels: labels,
-                prices: prices.map(p => parseFloat(p))
-            }
-        };
-    }
-
-    static getPointsForPeriod(period) {
-        switch(period) {
-            case '1D': return 24; // 24 hours
-            case '1M': return 30; // 30 days
-            case '3M': return 90; // 90 days
-            case '6M': return 180; // 180 days
-            case '1Y': return 12; // 12 months
-            case '3Y': return 36; // 36 months
-            case '5Y': return 60; // 60 months
-            default: return 30;
-        }
-    }
-
-    static formatDateLabel(date, period) {
-        if (period === '1D') {
-            return `${date.getHours().toString().padStart(2, '0')}:00`;
-        } else if (period === '1Y' || period === '3Y' || period === '5Y') {
-            return `${date.toLocaleString('default', { month: 'short' })} '${date.getFullYear().toString().substr(-2)}`;
-        } else {
-            return `${date.getDate()} ${date.toLocaleString('default', { month: 'short' })}`;
-        }
-    }
-}
+// Memory Cache to store historical data and save API calls
+// Structure: { 'GC=F': { '1D': {labels, prices}, '1M': {labels, prices} } }
+const chartCache = {}; 
 
 // ============================================================================
-// 3. UI RENDERING & LOGIC
+// 3. INITIALIZATION & TIMER
 // ============================================================================
 
-// Main initialization
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
     setupEventListeners();
     
-    // Auto-update every 15 minutes (15 * 60 * 1000 milliseconds)
+    // Auto-update every 15 minutes
     setInterval(() => {
-        console.log("15 min timer triggered. Refreshing data...");
-        initApp();
+        console.log("Timer triggered: Syncing live prices efficiently...");
+        syncLivePrices();
     }, 15 * 60 * 1000);
 });
 
 async function initApp() {
+    await syncLivePrices(); // Loads initial table data
+    await loadChartData(currentCommodity, currentPeriod); // Loads initial chart
+}
+
+// ============================================================================
+// 4. DATA FETCHING & SYNCING
+// ============================================================================
+
+// Fetches batch quotes and updates both the table and the live chart endpoint
+async function syncLivePrices() {
+    const symbols = commodities.map(c => c.ticker).join(',');
+    const endpoint = `${BASE_URL}/quote/${symbols}?apikey=${API_KEY}`;
+    
     try {
-        await updateTable();
-        await loadChartData(currentCommodity, currentPeriod);
+        const response = await fetch(endpoint);
+        const data = await response.json();
+
+        if (!Array.isArray(data)) throw new Error("API Limit reached or Invalid Data");
+
+        updateTableDOM(data);
+        
+        // Find the newly fetched live price for the currently selected commodity
+        const activeLiveData = data.find(item => item.symbol === currentCommodity.ticker);
+        if (activeLiveData) {
+            updateLiveChartPoint(activeLiveData.price);
+        }
+
         updateTimestamp();
     } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Live sync failed:", error);
     }
 }
 
-async function updateTable() {
+// Fetches historical data ONLY if it's not in the cache
+async function getHistoricalData(ticker, period) {
+    // 1. Check Cache
+    if (chartCache[ticker] && chartCache[ticker][period]) {
+        console.log(`Loaded ${period} data for ${ticker} from CACHE`);
+        return chartCache[ticker][period];
+    }
+
+    // 2. If not in cache, fetch from API
+    console.log(`Fetching ${period} data for ${ticker} from API...`);
+    let endpoint = '';
+    let dataPointsLimit = 0;
+
+    if (period === '1D') {
+        endpoint = `${BASE_URL}/historical-chart/15min/${ticker}?apikey=${API_KEY}`;
+        dataPointsLimit = 40;
+    } else {
+        endpoint = `${BASE_URL}/historical-price-full/${ticker}?apikey=${API_KEY}`;
+        switch(period) {
+            case '1M': dataPointsLimit = 22; break;
+            case '3M': dataPointsLimit = 65; break;
+            case '6M': dataPointsLimit = 130; break;
+            case '1Y': dataPointsLimit = 252; break;
+            case '3Y': dataPointsLimit = 756; break;
+            case '5Y': dataPointsLimit = 1260; break;
+            default: dataPointsLimit = 30;
+        }
+    }
+
+    const response = await fetch(endpoint);
+    const data = await response.json();
+
+    let rawData = period === '1D' ? data.slice(0, dataPointsLimit) : (data.historical ? data.historical.slice(0, dataPointsLimit) : []);
+    rawData.reverse(); // API gives newest first, we need oldest first for chart
+
+    const labels = rawData.map(item => {
+        const dateObj = new Date(item.date);
+        if (period === '1D') return `${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`;
+        if (period === '1Y' || period === '3Y' || period === '5Y') return `${dateObj.toLocaleString('en-US', { month: 'short' })} '${dateObj.getFullYear().toString().substr(-2)}`;
+        return `${dateObj.getDate()} ${dateObj.toLocaleString('en-US', { month: 'short' })}`;
+    });
+
+    const prices = rawData.map(item => item.close);
+
+    // 3. Save to Cache
+    if (!chartCache[ticker]) chartCache[ticker] = {};
+    chartCache[ticker][period] = { labels, prices };
+
+    return chartCache[ticker][period];
+}
+
+// ============================================================================
+// 5. DOM & CHART UPDATES
+// ============================================================================
+
+function updateTableDOM(apiDataArray) {
     const tbody = document.getElementById('table-body');
-    tbody.innerHTML = ''; // Clear table
+    tbody.innerHTML = ''; 
 
-    for (const comm of commodities) {
-        // Note: In a real app with API limits, you'd fetch a single "latest prices" endpoint here.
-        // We are using our simulated API fetch.
-        const data = await MockAPI.fetchData(comm.id, '1D');
-        
-        const changeValue = data.latestPrice - data.previousClose;
-        const changePercent = (changeValue / data.previousClose) * 100;
-        const isPositive = changeValue >= 0;
+    commodities.forEach(comm => {
+        const apiData = apiDataArray.find(item => item.symbol === comm.ticker);
+        if (!apiData) return;
 
+        const isPositive = apiData.change >= 0;
         const tr = document.createElement('tr');
         if (currentCommodity.id === comm.id) tr.classList.add('active-row');
         
@@ -139,115 +145,103 @@ async function updateTable() {
         tr.innerHTML = `
             <td>
                 <div class="commodity-name">${comm.name}</div>
-                <div style="font-size: 0.8rem; color: var(--text-secondary)">${comm.symbol}</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary)">${comm.ticker}</div>
             </td>
-            <td class="price">$${data.latestPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+            <td class="price">$${apiData.price.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
             <td class="change ${isPositive ? 'positive' : 'negative'}">
-                ${isPositive ? '+' : ''}${changeValue.toFixed(2)} (${isPositive ? '+' : ''}${changePercent.toFixed(2)}%)
+                ${isPositive ? '+' : ''}${apiData.change.toFixed(2)} (${isPositive ? '+' : ''}${apiData.changesPercentage.toFixed(2)}%)
             </td>
         `;
         tbody.appendChild(tr);
-    }
+    });
 }
 
 async function selectCommodity(commodity) {
-    if (currentCommodity.id === commodity.id) return; // Already selected
+    if (currentCommodity.id === commodity.id) return;
     currentCommodity = commodity;
     
-    // Highlight active row in table
-    initApp(); // Refresh table to move highlight and reload chart
+    // Refresh table immediately to update the highlighted row, then load chart
+    syncLivePrices(); 
+    loadChartData(currentCommodity, currentPeriod);
 }
 
-// ============================================================================
-// 4. CHART.JS INTEGRATION
-// ============================================================================
-
 async function loadChartData(commodity, period) {
-    // 1. Fetch the data representing the chosen commodity and period
-    const data = await MockAPI.fetchData(commodity.id, period);
+    document.getElementById('chart-title').innerText = `Loading data for ${commodity.name}...`;
     
-    // 2. Update chart title
-    document.getElementById('chart-title').innerText = `${commodity.name} (${commodity.symbol})`;
+    const chartData = await getHistoricalData(commodity.ticker, period);
+    
+    document.getElementById('chart-title').innerText = `${commodity.name} (${commodity.ticker})`;
+    
+    // We clone the arrays because Chart.js mutates them, which would corrupt our cache
+    renderChart([...chartData.labels], [...chartData.prices]);
+}
 
-    // 3. Render the chart
-    renderChart(data.history.labels, data.history.prices);
+// Mutates the existing chart dynamically without a page reload or API call
+function updateLiveChartPoint(newPrice) {
+    if (!chartInstance) return;
+
+    const dataPoints = chartInstance.data.datasets[0].data;
+    
+    // Replace the very last historical point with the live price
+    dataPoints[dataPoints.length - 1] = newPrice;
+
+    // Recalculate color dynamically (Green if overall trend is up, Red if down)
+    const startPrice = dataPoints[0];
+    const isPositive = newPrice >= startPrice;
+    
+    chartInstance.data.datasets[0].borderColor = isPositive ? '#198754' : '#dc3545';
+    chartInstance.data.datasets[0].backgroundColor = isPositive ? 'rgba(25, 135, 84, 0.1)' : 'rgba(220, 53, 69, 0.1)';
+
+    chartInstance.update(); // Smoothly animates the new data point!
 }
 
 function renderChart(labels, dataPoints) {
     const ctx = document.getElementById('commodityChart').getContext('2d');
 
-    // Destroy existing chart if it exists so we can draw a new one
-    if (chartInstance) {
-        chartInstance.destroy();
-    }
+    if (chartInstance) chartInstance.destroy();
 
-    // Determine line color based on start and end price
     const startPrice = dataPoints[0];
     const endPrice = dataPoints[dataPoints.length - 1];
-    const lineColor = endPrice >= startPrice ? '#198754' : '#dc3545'; // Green if up, Red if down
-    const gradientColor = endPrice >= startPrice ? 'rgba(25, 135, 84, 0.1)' : 'rgba(220, 53, 69, 0.1)';
+    const isPositive = endPrice >= startPrice;
 
     chartInstance = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
             datasets: [{
-                label: 'Price (USD)',
+                label: 'Price',
                 data: dataPoints,
-                borderColor: lineColor,
-                backgroundColor: gradientColor,
+                borderColor: isPositive ? '#198754' : '#dc3545',
+                backgroundColor: isPositive ? 'rgba(25, 135, 84, 0.1)' : 'rgba(220, 53, 69, 0.1)',
                 borderWidth: 2,
-                pointRadius: 0, // Hide points for clean look
+                pointRadius: 0,
                 pointHoverRadius: 6,
                 fill: true,
-                tension: 0.1 // Slight curve
+                tension: 0.1
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    display: false // Hide default legend
-                },
+                legend: { display: false },
                 tooltip: {
                     mode: 'index',
                     intersect: false,
                     callbacks: {
                         label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) label += ': ';
-                            if (context.parsed.y !== null) {
-                                label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
-                            }
-                            return label;
+                            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
                         }
                     }
                 }
             },
-            interaction: {
-                mode: 'nearest',
-                axis: 'x',
-                intersect: false
-            },
+            interaction: { mode: 'nearest', axis: 'x', intersect: false },
             scales: {
-                x: {
-                    grid: {
-                        display: false // Clean x-axis
-                    }
-                },
+                x: { grid: { display: false } },
                 y: {
-                    border: {
-                        display: false
-                    },
-                    grid: {
-                        color: '#e9ecef'
-                    },
-                    ticks: {
-                        callback: function(value) {
-                            return '$' + value;
-                        }
-                    }
+                    border: { display: false },
+                    grid: { color: '#e9ecef' },
+                    ticks: { callback: function(value) { return '$' + value; } }
                 }
             }
         }
@@ -255,19 +249,16 @@ function renderChart(labels, dataPoints) {
 }
 
 // ============================================================================
-// 5. EVENT LISTENERS & UTILITIES
+// 6. EVENT LISTENERS & UTILITIES
 // ============================================================================
 
 function setupEventListeners() {
     const buttons = document.querySelectorAll('.filter-btn');
     buttons.forEach(btn => {
         btn.addEventListener('click', (e) => {
-            // Remove active class from all
             buttons.forEach(b => b.classList.remove('active'));
-            // Add to clicked
             e.target.classList.add('active');
             
-            // Update state and fetch new data
             currentPeriod = e.target.getAttribute('data-period');
             loadChartData(currentCommodity, currentPeriod);
         });
@@ -276,6 +267,5 @@ function setupEventListeners() {
 
 function updateTimestamp() {
     const now = new Date();
-    const timeString = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    document.getElementById('last-update-time').innerText = timeString;
+    document.getElementById('last-update-time').innerText = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
