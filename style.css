@@ -59,7 +59,8 @@ body {
 /* Layout */
 .main-content {
     display: grid;
-    grid-template-columns: 360px 1fr; /* Sol menü biraz genişletildi (Scrollbar Fix) */
+    /* SOL MENÜ GENİŞLETİLDİ - Okunabilirlik için */
+    grid-template-columns: 390px 1fr; 
     gap: 24px;
     align-items: start;
     margin-bottom: 40px;
@@ -78,27 +79,17 @@ body {
 h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 20px; color: var(--text-primary); }
 .text-right { text-align: right !important; }
 
-/* Market Overview Table (Scrollbar FIXED) */
-.table-container { 
-    overflow: hidden; /* Scrollbar'ı tamamen gizler */
-    width: 100%;
-}
+/* Market Overview Table */
+.table-container { width: 100%; }
 
 #commodity-table { 
     width: 100%; 
     border-collapse: collapse; 
-    table-layout: fixed; /* İçeriğin genişliği bozmasını engeller */
-}
-
-#commodity-table th, #commodity-table td {
-    white-space: nowrap; /* Yazıların alt satıra geçmesini önler */
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 #commodity-table thead th {
     text-align: left;
-    padding: 12px 8px;
+    padding: 12px 10px;
     border-bottom: 1px solid var(--border-color);
     color: var(--text-secondary);
     font-weight: 500;
@@ -107,7 +98,7 @@ h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 20px; color: var(--text
 }
 
 #commodity-table tbody td {
-    padding: 14px 8px;
+    padding: 16px 10px;
     border-bottom: 1px solid var(--border-color);
     font-size: 0.9rem;
     vertical-align: middle;
@@ -117,7 +108,6 @@ h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 20px; color: var(--text
 #commodity-table tbody tr { cursor: pointer; transition: background-color 0.2s ease; }
 #commodity-table tbody tr:hover { background-color: var(--hover-bg); }
 #commodity-table tbody tr.active-row { background-color: #eff6ff; border-left: 4px solid var(--primary-color); }
-#commodity-table tbody tr.active-row td:first-child { padding-left: 12px; }
 
 .commodity-name { font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;}
 .price { font-weight: 500; font-family: 'Inter', monospace; letter-spacing: -0.02em; }
@@ -137,9 +127,9 @@ h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 20px; color: var(--text
     text-transform: uppercase;
 }
 .perf-table td {
-    padding: 10px 12px; /* Çok daha dar satır aralıkları */
+    padding: 10px 12px; 
     border-bottom: 1px solid var(--border-color);
-    font-size: 0.85rem; /* Yazı fontu küçüldü */
+    font-size: 0.85rem; 
 }
 .perf-table tbody tr:last-child td { border-bottom: none; }
 .perf-table strong { font-weight: 600; color: var(--text-primary); }
