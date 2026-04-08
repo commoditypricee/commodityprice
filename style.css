@@ -45,21 +45,24 @@ body {
 .logo-area h1 { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em; }
 .logo-area p { color: var(--text-secondary); font-size: 0.9rem; margin-top: 2px; }
 
+/* GÜNCELLENDİ: Daha şık, belirgin ve modern "Pill" Saat Tasarımı */
 .clock-area {
     font-size: 0.95rem;
-    font-weight: 500;
-    color: var(--text-secondary);
-    background-color: var(--bg-color);
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    letter-spacing: 0.02em;
+    font-weight: 600; /* Daha kalın */
+    color: #1f2937; /* Daha koyu ve okunabilir */
+    background-color: #f3f4f6; /* Hafif kontrastlı arka plan */
+    padding: 10px 20px;
+    border-radius: 9999px; /* Tam yuvarlak hap tasarımı */
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02); /* Çok hafif derinlik */
+    letter-spacing: 0.01em;
+    display: inline-flex;
+    align-items: center;
 }
 
 /* Layout */
 .main-content {
     display: grid;
-    /* SOL MENÜ GENİŞLETİLDİ - Okunabilirlik için */
     grid-template-columns: 390px 1fr; 
     gap: 24px;
     align-items: start;
