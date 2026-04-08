@@ -1,6 +1,6 @@
 /**
- * COMMODITY PRICE TRACKER - SECURE CLOUDFLARE PROXY ARCHITECTURE
- * Final Polish: Sync Today/24h Data, Month-Year Axis, Styled Tables
+ * COMMODITY PRO - SECURE CLOUDFLARE PROXY ARCHITECTURE
+ * Live Simulation: Micro-fluctuations, Smooth Scrolling, Anchor Sync
  */
 
 // ============================================================================
@@ -21,7 +21,12 @@ let currentCommodity = commodities[0];
 let currentPeriod = '1D';
 let chartInstance = null;
 const chartCache = {}; 
-let livePricesMap = {}; // Artık sadece fiyatı değil, değişimi de tutuyor.
+let livePricesMap = {}; 
+
+// CANLI SİMÜLASYON DEĞİŞKENLERİ
+let simulationInterval = null;
+let lastRealPrice = 0;   // API'den gelen son gerçek fiyat (Çıpa)
+let currentSimPrice = 0; // Ekranda saniyelik dalgalanan sahte fiyat
 
 const fetchOptions = {
     method: 'GET',
@@ -44,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initApp();
     setupEventListeners();
     
+    // Asıl 15 dakikalık gerçek veri döngüsü
     setInterval(() => {
         syncLivePrices();
     }, 15 * 60 * 1000);
@@ -75,7 +81,7 @@ async function initApp() {
 }
 
 // ============================================================================
-// 3. SECURE DATA FETCHING
+// 3. SECURE DATA FETCHING & SYNC
 // ============================================================================
 
 async function syncLivePrices() {
@@ -91,7 +97,6 @@ async function syncLivePrices() {
         
         if (!Array.isArray(results) || results.length === 0) throw new Error("Invalid live data format from API");
 
-        // GÜNCELLEME: Tüm anlık değişim verilerini (24H Change) global hafızaya kaydediyoruz
         results.forEach(item => {
             livePricesMap[item.symbol] = {
                 price: item.regularMarketPrice,
@@ -100,21 +105,17 @@ async function syncLivePrices() {
             };
         });
 
+        // Tablolar gerçek API verisiyle güncellenir (Simülasyondan etkilenmez)
         updateTableDOM(results);
+        updatePerformanceTable(currentCommodity);
         
         const activeLiveData = results.find(item => item.symbol === currentCommodity.ticker);
         if (activeLiveData && activeLiveData.regularMarketPrice) {
             updateLiveChartPoint(activeLiveData.regularMarketPrice);
         }
-        
-        updatePerformanceTable(currentCommodity);
 
     } catch (error) {
         console.error("❌ Live sync failed:", error.message);
-        const tbody = document.getElementById('table-body');
-        if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#ef4444; font-weight:bold;">Error loading live prices.</td></tr>`;
-        }
     }
 }
 
@@ -156,13 +157,11 @@ async function getHistoricalData(ticker, period) {
             if (rawPrices[i] !== null) {
                 const dateObj = new Date(rawTimestamps[i] * 1000);
                 
-                // Tooltip için HER ZAMAN tam tarihi (Gün Ay Yıl) veriyoruz. Eksen ayarını aşağıda Chart.js'te yapacağız.
                 if (period === '1D') {
                     labels.push(`${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`);
                 } else {
                     labels.push(`${dateObj.getDate()} ${dateObj.toLocaleString('en-US', { month: 'short' })} ${dateObj.getFullYear()}`);
                 }
-                
                 prices.push(rawPrices[i]);
             }
         }
@@ -175,7 +174,6 @@ async function getHistoricalData(ticker, period) {
         return chartCache[ticker][period];
 
     } catch (error) {
-        console.error(`❌ Historical data failed for ${period}:`, error.message);
         throw error; 
     }
 }
@@ -187,7 +185,6 @@ async function getHistoricalData(ticker, period) {
 function updateTableDOM(apiDataArray) {
     const tbody = document.getElementById('table-body');
     if (!tbody) return;
-    
     tbody.innerHTML = ''; 
 
     commodities.forEach(comm => {
@@ -201,7 +198,6 @@ function updateTableDOM(apiDataArray) {
 
         const tr = document.createElement('tr');
         if (currentCommodity.id === comm.id) tr.classList.add('active-row');
-        
         tr.onclick = () => selectCommodity(comm);
 
         tr.innerHTML = `
@@ -245,7 +241,6 @@ async function updatePerformanceTable(commodity) {
             const displayName = displayNames[index];
             const tr = document.createElement('tr');
             
-            // GÜNCELLEME: "Today" satırı artık geçmiş veriyle hesaplanmıyor. Doğrudan Sol Tablonun (24H) verisini kullanıyor. %100 Senkronizasyon!
             if (period === '1D') {
                 const change = liveData.change;
                 const changePct = liveData.changePercent;
@@ -259,7 +254,6 @@ async function updatePerformanceTable(commodity) {
                     <td class="change text-right ${colorClass}">${sign}${Math.abs(changePct).toFixed(2)}%</td>
                 `;
             } else {
-                // Diğer uzun periyotlar (1 Ay, 6 Ay vs) hesaplanmaya devam ediyor
                 if (!data || data.prices.length === 0) {
                     tr.innerHTML = `<td><strong>${displayName}</strong></td><td colspan="2" class="text-right" style="color:#6b7280">Data unavailable</td>`;
                 } else {
@@ -297,17 +291,31 @@ async function selectCommodity(commodity) {
 }
 
 // ============================================================================
-// 5. CHART.JS RENDERING
+// 5. CHART.JS RENDERING & LIVE SIMULATION
 // ============================================================================
 
 async function loadChartData(commodity, period) {
     const titleEl = document.getElementById('chart-title');
     if (titleEl) titleEl.innerText = `Loading ${commodity.name} Price...`;
     
+    // Simülasyonu geçici olarak durdur
+    if (simulationInterval) clearInterval(simulationInterval);
+    
     try {
         const chartData = await getHistoricalData(commodity.ticker, period);
         if (titleEl) titleEl.innerText = `${commodity.name} Price`;
+        
+        // Simülasyon çıpalarını (anchor) ayarla
+        if (chartData.prices.length > 0) {
+            lastRealPrice = livePricesMap[commodity.ticker] ? livePricesMap[commodity.ticker].price : chartData.prices[chartData.prices.length - 1];
+            currentSimPrice = lastRealPrice;
+        }
+
         renderChart([...chartData.labels], [...chartData.prices]);
+        
+        // Veri yüklendikten sonra simülasyonu başlat
+        startLiveSimulation();
+
     } catch (error) {
         if (titleEl) titleEl.innerHTML = `<span style="color: #ef4444;">Data unavailable for ${commodity.name} (${period})</span>`;
         if (chartInstance) {
@@ -317,12 +325,76 @@ async function loadChartData(commodity, period) {
     }
 }
 
-function updateLiveChartPoint(newPrice) {
-    if (!chartInstance) return;
-    const dataPoints = chartInstance.data.datasets[0].data;
-    dataPoints[dataPoints.length - 1] = newPrice;
+// 15 Dakikada bir çalışan GERÇEK API eşitlemesi
+function updateLiveChartPoint(newRealPrice) {
+    lastRealPrice = newRealPrice; // Çıpayı güncelle
+    currentSimPrice = newRealPrice; // Simülasyonu yeni gerçek fiyata lastikle çek
     
-    chartInstance.update(); 
+    if (!chartInstance || currentPeriod !== '1D') return;
+
+    const dataPoints = chartInstance.data.datasets[0].data;
+    const labels = chartInstance.data.labels;
+    
+    dataPoints.push(newRealPrice);
+    const now = new Date();
+    labels.push(`${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`);
+    
+    if (dataPoints.length > 60) {
+        dataPoints.shift();
+        labels.shift();
+    }
+    
+    chartInstance.update('active'); 
+}
+
+// YENİ: 2.5 Saniyede bir çalışan CANLI SİMÜLASYON (Micro-fluctuations)
+function startLiveSimulation() {
+    if (simulationInterval) clearInterval(simulationInterval);
+    
+    // Simülasyon sadece Günlük (1D) görünümde çalışsın
+    if (currentPeriod !== '1D') return;
+
+    simulationInterval = setInterval(() => {
+        if (!chartInstance) return;
+
+        const dataPoints = chartInstance.data.datasets[0].data;
+        const labels = chartInstance.data.labels;
+        
+        if (dataPoints.length === 0) return;
+
+        // Fiyatın ortalama 10 binde 1'i kadar rastgele dalgalanma (Volatility)
+        const volatility = lastRealPrice * 0.0001; 
+        const change = (Math.random() - 0.5) * volatility;
+        currentSimPrice += change;
+
+        // Lastik Bant Etkisi: Simülasyon gerçek fiyattan %0.05'ten fazla koparsa merkeze çek
+        const maxDeviation = lastRealPrice * 0.0005;
+        if (currentSimPrice > lastRealPrice + maxDeviation) {
+            currentSimPrice -= Math.abs(change) * 2;
+        } else if (currentSimPrice < lastRealPrice - maxDeviation) {
+            currentSimPrice += Math.abs(change) * 2;
+        }
+
+        // Sahte veriyi diziye ekle
+        dataPoints.push(currentSimPrice);
+        
+        // Saniyeli saat formatında yeni etiket ekle
+        const now = new Date();
+        labels.push(`${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`);
+
+        // Akıcı kaydırma için (Smooth Scroll) baştaki verileri sil (Maksimum 60 nokta barındırır)
+        if (dataPoints.length > 60) {
+            dataPoints.shift();
+            labels.shift();
+        }
+
+        // Grafiği yumuşak bir animasyonla güncelle
+        chartInstance.update({
+            duration: 800,
+            easing: 'linear'
+        });
+        
+    }, 2500); // 2.5 saniyede bir tetiklenir
 }
 
 function renderChart(labels, dataPoints) {
@@ -335,7 +407,7 @@ function renderChart(labels, dataPoints) {
     chartInstance = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: labels, // Tooltip, bu eksiksiz etiketleri kullanır
+            labels: labels, 
             datasets: [{
                 label: 'Price',
                 data: dataPoints,
@@ -351,6 +423,10 @@ function renderChart(labels, dataPoints) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            // Animasyon ayarları yumuşatıldı
+            animation: {
+                duration: 500,
+            },
             plugins: {
                 legend: { display: false },
                 tooltip: {
@@ -378,13 +454,12 @@ function renderChart(labels, dataPoints) {
                         maxTicksLimit: 6, 
                         maxRotation: 0, 
                         autoSkip: true,
-                        // GÜNCELLEME: Uzun periyotlarda (6M, 1Y, 5Y) alt eksendeki "Gün" bilgisini kaldırıyoruz.
                         callback: function(val, index) {
                             let label = this.getLabelForValue(val);
                             if (['6M', '1Y', '5Y'].includes(currentPeriod)) {
-                                let parts = label.split(' '); // Örn: ["15", "Jan", "2025"]
+                                let parts = label.split(' '); 
                                 if (parts.length === 3) {
-                                    return parts[1] + ' ' + parts[2]; // Örn: "Jan 2025"
+                                    return parts[1] + ' ' + parts[2]; 
                                 }
                             }
                             return label;
