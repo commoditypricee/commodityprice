@@ -1,10 +1,10 @@
 /**
  * COMMODITY PRO - SECURE CLOUDFLARE PROXY ARCHITECTURE
- * Fixed Chart Styling: Single Blue Color, No Fill, Optimized X-Axis
+ * Fixed Visuals: Blue Line, No Fill, Optimized Ticks, Fixed Typography
  */
 
 // 1. AYARLAR (PROXY YAPISI)
-const WORKER_URL = "yahoo-proxy.commodityprice.workers.dev"; // Kendi URL'ni buraya yaz!
+const WORKER_URL = "yahoo-proxy.commodityprice.workers.dev; // Kendi URL'ni buraya yaz!
 const PROXY_SECRET = "CommoditySecure2026"; 
 
 const commodities = [
@@ -259,23 +259,25 @@ async function selectCommodity(commodity) {
     if (currentCommodity.id === commodity.id) return;
     currentCommodity = commodity;
     
-    document.getElementById('chart-title').innerText = `Loading ${commodity.name}...`;
+    // GÜNCELLEME: Başlığa Price eklendi
+    document.getElementById('chart-title').innerText = `Loading ${commodity.name} Price...`;
     
     syncLivePrices(); 
     loadChartData(currentCommodity, currentPeriod);
 }
 
 // ============================================================================
-// 5. CHART.JS RENDERING (Single Blue Line, No Fill, Optimized X-Axis)
+// 5. CHART.JS RENDERING (Blue Line, No Fill, Optimized X-Axis Ticks)
 // ============================================================================
 
 async function loadChartData(commodity, period) {
     const titleEl = document.getElementById('chart-title');
-    titleEl.innerText = `Loading ${commodity.name}...`;
+    titleEl.innerText = `Loading ${commodity.name} Price...`;
     
     try {
         const chartData = await getHistoricalData(commodity.ticker, period);
-        titleEl.innerText = `${commodity.name}`;
+        // GÜNCELLEME: Başlığa Price eklendi
+        titleEl.innerText = `${commodity.name} Price`;
         renderChart([...chartData.labels], [...chartData.prices]);
     } catch (error) {
         titleEl.innerHTML = `<span style="color: var(--danger-color);">Data unavailable for ${commodity.name} (${period})</span>`;
@@ -291,7 +293,6 @@ function updateLiveChartPoint(newPrice) {
     const dataPoints = chartInstance.data.datasets[0].data;
     dataPoints[dataPoints.length - 1] = newPrice;
     
-    // Çizgi rengi sabitlendiği için renk değiştirme kodları kaldırıldı.
     chartInstance.update(); 
 }
 
@@ -306,11 +307,12 @@ function renderChart(labels, dataPoints) {
             datasets: [{
                 label: 'Price',
                 data: dataPoints,
-                borderColor: '#007bff', // Sabit Mavi Renk
+                borderColor: '#007bff', // GÜNCELLEME: Sabit Mavi Renk
+                backgroundColor: 'transparent', // GÜNCELLEME: Şeffaf arkaplan
                 borderWidth: 3.5, 
                 pointRadius: 0,
                 pointHoverRadius: 6,
-                fill: false, // Alan taraması (shade/fill) kaldırıldı
+                fill: false, // GÜNCELLEME: Alan taraması tamamen kaldırıldı
                 tension: 0.15
             }]
         },
@@ -339,9 +341,10 @@ function renderChart(labels, dataPoints) {
                     grid: { display: true, color: '#000000', drawBorder: true },
                     ticks: { 
                         font: { family: 'Inter' },
-                        maxTicksLimit: 8, // X eksenindeki saat etiketlerini seyrelttik
-                        autoSkip: true,
-                        maxRotation: 45 // Okunabilirliği artırmak için hafif açı
+                        // GÜNCELLEME: X Ekseni maksimum etiket (tick) sayısı ciddi şekilde azaltıldı
+                        maxTicksLimit: 6, 
+                        maxRotation: 0, // GÜNCELLEME: Yazıların eğik durması engellendi, düz ve sade
+                        autoSkip: true
                     }
                 },
                 y: {
