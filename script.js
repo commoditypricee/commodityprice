@@ -1,10 +1,10 @@
 /**
  * COMMODITY PRO - SECURE CLOUDFLARE PROXY ARCHITECTURE
- * Dynamic Clock, Compact Performance Table, Bold Chart Lines
+ * Fixed Chart Styling: Single Blue Color, No Fill, Optimized X-Axis
  */
 
 // 1. AYARLAR (PROXY YAPISI)
-const WORKER_URL = "https://yahoo-proxy.commodityprice.workers.dev/"; // Kendi URL'ni buraya yaz!
+const WORKER_URL = "yahoo-proxy.commodityprice.workers.dev"; // Kendi URL'ni buraya yaz!
 const PROXY_SECRET = "CommoditySecure2026"; 
 
 const commodities = [
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         alert("🚨 Lütfen script.js dosyasındaki WORKER_URL kısmını kendi Cloudflare adresinizle değiştirin.");
     }
 
-    startLiveClock(); // Canlı saati başlat
+    startLiveClock(); 
     initApp();
     setupEventListeners();
     
@@ -47,7 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 15 * 60 * 1000);
 });
 
-// Canlı Saat ve Tarih Fonksiyonu
 function startLiveClock() {
     const clockEl = document.getElementById('live-clock');
     
@@ -59,8 +58,8 @@ function startLiveClock() {
         clockEl.innerText = `${dateStr} | ${timeStr}`;
     }
     
-    updateTime(); // Sayfa açıldığında anında göster
-    setInterval(updateTime, 1000); // Her saniye güncelle
+    updateTime(); 
+    setInterval(updateTime, 1000); 
 }
 
 async function initApp() {
@@ -118,10 +117,8 @@ async function getHistoricalData(ticker, period) {
     
     switch(period) {
         case '1M': range = '1mo'; interval = '1d'; break;
-        case '3M': range = '3mo'; interval = '1d'; break;
         case '6M': range = '6mo'; interval = '1d'; break;
         case '1Y': range = '1y'; interval = '1d'; break;
-        case '3Y': range = '3y'; interval = '1wk'; break;
         case '5Y': range = '5y'; interval = '1wk'; break;
     }
 
@@ -150,7 +147,7 @@ async function getHistoricalData(ticker, period) {
                 
                 if (period === '1D') {
                     labels.push(`${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`);
-                } else if (period === '1Y' || period === '3Y' || period === '5Y') {
+                } else if (period === '1Y' || period === '5Y') {
                     labels.push(`${dateObj.toLocaleString('en-US', { month: 'short' })} '${dateObj.getFullYear().toString().substr(-2)}`);
                 } else {
                     labels.push(`${dateObj.getDate()} ${dateObj.toLocaleString('en-US', { month: 'short' })}`);
@@ -210,13 +207,11 @@ function updateTableDOM(apiDataArray) {
     });
 }
 
-// GÜNCELLENMİŞ: Kompakt Dinamik Performans Tablosu (3 Ay ve 3 Yıl silindi)
 async function updatePerformanceTable(commodity) {
-    // Tablo başlığını emtia adıyla dinamik değiştir
     document.getElementById('perf-title').innerText = `${commodity.name} Price Performance`;
 
     const fetchPeriods = ['1D', '1M', '6M', '1Y', '5Y'];
-    const displayNames = ['Today', '1 Month', '6 Months', '1 Year', '5 Years']; // Ekranda yazacak isimler
+    const displayNames = ['Today', '1 Month', '6 Months', '1 Year', '5 Years']; 
     const tbody = document.getElementById('perf-table-body');
     
     tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: var(--text-secondary); padding: 20px;">Analyzing data...</td></tr>';
@@ -271,7 +266,7 @@ async function selectCommodity(commodity) {
 }
 
 // ============================================================================
-// 5. CHART CHART.JS RENDERING (Bold & Opaque Lines)
+// 5. CHART.JS RENDERING (Single Blue Line, No Fill, Optimized X-Axis)
 // ============================================================================
 
 async function loadChartData(commodity, period) {
@@ -295,23 +290,14 @@ function updateLiveChartPoint(newPrice) {
     if (!chartInstance) return;
     const dataPoints = chartInstance.data.datasets[0].data;
     dataPoints[dataPoints.length - 1] = newPrice;
-
-    const startPrice = dataPoints[0];
-    const isPositive = newPrice >= startPrice;
     
-    // Anlık fiyat güncellemelerinde de %100 opak tam renkler (Hex kodları) kullanıldı
-    chartInstance.data.datasets[0].borderColor = isPositive ? '#10b981' : '#ef4444';
-    chartInstance.data.datasets[0].backgroundColor = isPositive ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.05)';
+    // Çizgi rengi sabitlendiği için renk değiştirme kodları kaldırıldı.
     chartInstance.update(); 
 }
 
 function renderChart(labels, dataPoints) {
     const ctx = document.getElementById('commodityChart').getContext('2d');
     if (chartInstance) chartInstance.destroy();
-
-    const startPrice = dataPoints[0];
-    const endPrice = dataPoints[dataPoints.length - 1];
-    const isPositive = endPrice >= startPrice;
 
     chartInstance = new Chart(ctx, {
         type: 'line',
@@ -320,13 +306,11 @@ function renderChart(labels, dataPoints) {
             datasets: [{
                 label: 'Price',
                 data: dataPoints,
-                // Çizgi renkleri kalın ve tamamen opak (Alpha/saydamlık kaldırıldı)
-                borderColor: isPositive ? '#10b981' : '#ef4444',
-                backgroundColor: isPositive ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.05)',
-                borderWidth: 3.5, // Çizgi oldukça kalınlaştırıldı
+                borderColor: '#007bff', // Sabit Mavi Renk
+                borderWidth: 3.5, 
                 pointRadius: 0,
                 pointHoverRadius: 6,
-                fill: true,
+                fill: false, // Alan taraması (shade/fill) kaldırıldı
                 tension: 0.15
             }]
         },
@@ -353,7 +337,12 @@ function renderChart(labels, dataPoints) {
             scales: {
                 x: { 
                     grid: { display: true, color: '#000000', drawBorder: true },
-                    ticks: { font: { family: 'Inter' } }
+                    ticks: { 
+                        font: { family: 'Inter' },
+                        maxTicksLimit: 8, // X eksenindeki saat etiketlerini seyrelttik
+                        autoSkip: true,
+                        maxRotation: 45 // Okunabilirliği artırmak için hafif açı
+                    }
                 },
                 y: {
                     border: { display: false },
