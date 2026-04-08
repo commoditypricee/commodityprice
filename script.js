@@ -1,10 +1,13 @@
 /**
  * COMMODITY PRO - SECURE CLOUDFLARE PROXY ARCHITECTURE
- * Fixed Visuals: Blue Line, No Fill, Optimized Ticks, Fixed Typography
+ * Clean Syntax, Fixed Visuals: Blue Line, No Fill, Optimized Ticks
  */
 
+// ============================================================================
 // 1. AYARLAR (PROXY YAPISI)
-const WORKER_URL = "yahoo-proxy.commodityprice.workers.dev"; // Kendi URL'ni buraya yaz!
+// LÜTFEN DİKKAT: Kendi URL'nizi eklerken tırnak işaretlerini (" ") SİLMEYİN!
+// ============================================================================
+const WORKER_URL = "https://yahoo-proxy.commodityprice.workers.dev";
 const PROXY_SECRET = "CommoditySecure2026"; 
 
 const commodities = [
@@ -34,8 +37,8 @@ const fetchOptions = {
 // ============================================================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    if(WORKER_URL.includes("SENIN-KULLANICI-ADIN")) {
-        alert("🚨 Lütfen script.js dosyasındaki WORKER_URL kısmını kendi Cloudflare adresinizle değiştirin.");
+    if (WORKER_URL.includes("SENIN-KULLANICI-ADIN") || WORKER_URL === "") {
+        alert("🚨 Lütfen script.js dosyasındaki WORKER_URL kısmına kendi Cloudflare adresinizi tırnakları bozmadan ekleyin.");
     }
 
     startLiveClock(); 
@@ -49,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function startLiveClock() {
     const clockEl = document.getElementById('live-clock');
+    if (!clockEl) return;
     
     function updateTime() {
         const now = new Date();
@@ -103,7 +107,10 @@ async function syncLivePrices() {
 
     } catch (error) {
         console.error("❌ Live sync failed:", error.message);
-        document.getElementById('table-body').innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--danger-color); font-weight:bold;">Error loading live prices.</td></tr>`;
+        const tbody = document.getElementById('table-body');
+        if (tbody) {
+            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#ef4444; font-weight:bold;">Error loading live prices.</td></tr>`;
+        }
     }
 }
 
@@ -176,6 +183,8 @@ async function getHistoricalData(ticker, period) {
 
 function updateTableDOM(apiDataArray) {
     const tbody = document.getElementById('table-body');
+    if (!tbody) return;
+    
     tbody.innerHTML = ''; 
 
     commodities.forEach(comm => {
@@ -208,13 +217,15 @@ function updateTableDOM(apiDataArray) {
 }
 
 async function updatePerformanceTable(commodity) {
-    document.getElementById('perf-title').innerText = `${commodity.name} Price Performance`;
+    const titleEl = document.getElementById('perf-title');
+    if (titleEl) titleEl.innerText = `${commodity.name} Price Performance`;
 
     const fetchPeriods = ['1D', '1M', '6M', '1Y', '5Y'];
     const displayNames = ['Today', '1 Month', '6 Months', '1 Year', '5 Years']; 
     const tbody = document.getElementById('perf-table-body');
+    if (!tbody) return;
     
-    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: var(--text-secondary); padding: 20px;">Analyzing data...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: #6b7280; padding: 20px;">Analyzing data...</td></tr>';
 
     try {
         const currentPrice = livePricesMap[commodity.ticker];
@@ -232,7 +243,7 @@ async function updatePerformanceTable(commodity) {
             const tr = document.createElement('tr');
             
             if (!data || data.prices.length === 0) {
-                tr.innerHTML = `<td><strong>${displayName}</strong></td><td colspan="2" class="text-right" style="color:var(--text-secondary)">Data unavailable</td>`;
+                tr.innerHTML = `<td><strong>${displayName}</strong></td><td colspan="2" class="text-right" style="color:#6b7280">Data unavailable</td>`;
             } else {
                 const oldPrice = data.prices[0];
                 const change = currentPrice - oldPrice;
@@ -251,7 +262,7 @@ async function updatePerformanceTable(commodity) {
             tbody.appendChild(tr);
         });
     } catch (error) {
-        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--danger-color);">Failed to load performance metrics</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#ef4444;">Failed to load performance metrics</td></tr>`;
     }
 }
 
@@ -259,8 +270,8 @@ async function selectCommodity(commodity) {
     if (currentCommodity.id === commodity.id) return;
     currentCommodity = commodity;
     
-    // GÜNCELLEME: Başlığa Price eklendi
-    document.getElementById('chart-title').innerText = `Loading ${commodity.name} Price...`;
+    const chartTitleEl = document.getElementById('chart-title');
+    if (chartTitleEl) chartTitleEl.innerText = `Loading ${commodity.name} Price...`;
     
     syncLivePrices(); 
     loadChartData(currentCommodity, currentPeriod);
@@ -272,15 +283,14 @@ async function selectCommodity(commodity) {
 
 async function loadChartData(commodity, period) {
     const titleEl = document.getElementById('chart-title');
-    titleEl.innerText = `Loading ${commodity.name} Price...`;
+    if (titleEl) titleEl.innerText = `Loading ${commodity.name} Price...`;
     
     try {
         const chartData = await getHistoricalData(commodity.ticker, period);
-        // GÜNCELLEME: Başlığa Price eklendi
-        titleEl.innerText = `${commodity.name} Price`;
+        if (titleEl) titleEl.innerText = `${commodity.name} Price`;
         renderChart([...chartData.labels], [...chartData.prices]);
     } catch (error) {
-        titleEl.innerHTML = `<span style="color: var(--danger-color);">Data unavailable for ${commodity.name} (${period})</span>`;
+        if (titleEl) titleEl.innerHTML = `<span style="color: #ef4444;">Data unavailable for ${commodity.name} (${period})</span>`;
         if (chartInstance) {
             chartInstance.destroy();
             chartInstance = null;
@@ -297,7 +307,10 @@ function updateLiveChartPoint(newPrice) {
 }
 
 function renderChart(labels, dataPoints) {
-    const ctx = document.getElementById('commodityChart').getContext('2d');
+    const canvas = document.getElementById('commodityChart');
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
     if (chartInstance) chartInstance.destroy();
 
     chartInstance = new Chart(ctx, {
@@ -307,12 +320,12 @@ function renderChart(labels, dataPoints) {
             datasets: [{
                 label: 'Price',
                 data: dataPoints,
-                borderColor: '#007bff', // GÜNCELLEME: Sabit Mavi Renk
-                backgroundColor: 'transparent', // GÜNCELLEME: Şeffaf arkaplan
+                borderColor: '#007bff', // Sabit Mavi Renk
+                backgroundColor: 'transparent',
                 borderWidth: 3.5, 
                 pointRadius: 0,
                 pointHoverRadius: 6,
-                fill: false, // GÜNCELLEME: Alan taraması tamamen kaldırıldı
+                fill: false, // Alan taraması tamamen kaldırıldı
                 tension: 0.15
             }]
         },
@@ -341,9 +354,8 @@ function renderChart(labels, dataPoints) {
                     grid: { display: true, color: '#000000', drawBorder: true },
                     ticks: { 
                         font: { family: 'Inter' },
-                        // GÜNCELLEME: X Ekseni maksimum etiket (tick) sayısı ciddi şekilde azaltıldı
-                        maxTicksLimit: 6, 
-                        maxRotation: 0, // GÜNCELLEME: Yazıların eğik durması engellendi, düz ve sade
+                        maxTicksLimit: 6, // X Ekseni etiket sayısı sadeleştirildi
+                        maxRotation: 0, 
                         autoSkip: true
                     }
                 },
