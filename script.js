@@ -1,11 +1,10 @@
 /**
- * COMMODITY PRO - SECURE CLOUDFLARE PROXY ARCHITECTURE
- * Final Polish: Tooltip displayColors false, Bold Ticks, Full Date Formatting
+ * COMMODITY PRICE TRACKER - SECURE CLOUDFLARE PROXY ARCHITECTURE
+ * Final Polish: Sync Today/24h Data, Month-Year Axis, Styled Tables
  */
 
 // ============================================================================
 // 1. AYARLAR (PROXY YAPISI KORUNDU)
-// LÜTFEN DİKKAT: Kendi URL'nizi eklerken tırnak işaretlerini (" ") SİLMEYİN!
 // ============================================================================
 const WORKER_URL = "https://yahoo-proxy.commodityprice.workers.dev";
 const PROXY_SECRET = "CommoditySecure2026"; 
@@ -22,7 +21,7 @@ let currentCommodity = commodities[0];
 let currentPeriod = '1D';
 let chartInstance = null;
 const chartCache = {}; 
-let livePricesMap = {}; 
+let livePricesMap = {}; // Artık sadece fiyatı değil, değişimi de tutuyor.
 
 const fetchOptions = {
     method: 'GET',
@@ -38,7 +37,7 @@ const fetchOptions = {
 
 document.addEventListener('DOMContentLoaded', () => {
     if (WORKER_URL.includes("SENIN-KULLANICI-ADIN") || WORKER_URL === "") {
-        alert("🚨 Lütfen script.js dosyasındaki WORKER_URL kısmına kendi Cloudflare adresinizi tırnakları bozmadan ekleyin.");
+        alert("🚨 Lütfen script.js dosyasındaki WORKER_URL kısmına kendi Cloudflare adresinizi ekleyin.");
     }
 
     startLiveClock(); 
@@ -92,8 +91,13 @@ async function syncLivePrices() {
         
         if (!Array.isArray(results) || results.length === 0) throw new Error("Invalid live data format from API");
 
+        // GÜNCELLEME: Tüm anlık değişim verilerini (24H Change) global hafızaya kaydediyoruz
         results.forEach(item => {
-            livePricesMap[item.symbol] = item.regularMarketPrice;
+            livePricesMap[item.symbol] = {
+                price: item.regularMarketPrice,
+                change: item.regularMarketChange,
+                changePercent: item.regularMarketChangePercent
+            };
         });
 
         updateTableDOM(results);
@@ -152,7 +156,7 @@ async function getHistoricalData(ticker, period) {
             if (rawPrices[i] !== null) {
                 const dateObj = new Date(rawTimestamps[i] * 1000);
                 
-                // GÜNCELLEME: Uzun periyotlarda artık "15 Jan 2025" şeklinde kesin Gün, Ay, Yıl basılıyor.
+                // Tooltip için HER ZAMAN tam tarihi (Gün Ay Yıl) veriyoruz. Eksen ayarını aşağıda Chart.js'te yapacağız.
                 if (period === '1D') {
                     labels.push(`${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`);
                 } else {
@@ -227,8 +231,8 @@ async function updatePerformanceTable(commodity) {
     tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: #6b7280; padding: 20px;">Analyzing data...</td></tr>';
 
     try {
-        const currentPrice = livePricesMap[commodity.ticker];
-        if (!currentPrice) return;
+        const liveData = livePricesMap[commodity.ticker];
+        if (!liveData) return;
 
         const histDataArray = await Promise.all(
             fetchPeriods.map(p => getHistoricalData(commodity.ticker, p).catch(e => null))
@@ -241,13 +245,10 @@ async function updatePerformanceTable(commodity) {
             const displayName = displayNames[index];
             const tr = document.createElement('tr');
             
-            if (!data || data.prices.length === 0) {
-                tr.innerHTML = `<td><strong>${displayName}</strong></td><td colspan="2" class="text-right" style="color:#6b7280">Data unavailable</td>`;
-            } else {
-                const oldPrice = data.prices[0];
-                const change = currentPrice - oldPrice;
-                const changePct = (change / oldPrice) * 100;
-                
+            // GÜNCELLEME: "Today" satırı artık geçmiş veriyle hesaplanmıyor. Doğrudan Sol Tablonun (24H) verisini kullanıyor. %100 Senkronizasyon!
+            if (period === '1D') {
+                const change = liveData.change;
+                const changePct = liveData.changePercent;
                 const isPositive = change >= 0;
                 const colorClass = isPositive ? 'positive' : 'negative';
                 const sign = isPositive ? '+' : '';
@@ -257,6 +258,25 @@ async function updatePerformanceTable(commodity) {
                     <td class="price text-right ${colorClass}">${sign}$${Math.abs(change).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
                     <td class="change text-right ${colorClass}">${sign}${Math.abs(changePct).toFixed(2)}%</td>
                 `;
+            } else {
+                // Diğer uzun periyotlar (1 Ay, 6 Ay vs) hesaplanmaya devam ediyor
+                if (!data || data.prices.length === 0) {
+                    tr.innerHTML = `<td><strong>${displayName}</strong></td><td colspan="2" class="text-right" style="color:#6b7280">Data unavailable</td>`;
+                } else {
+                    const oldPrice = data.prices[0];
+                    const change = liveData.price - oldPrice;
+                    const changePct = (change / oldPrice) * 100;
+                    
+                    const isPositive = change >= 0;
+                    const colorClass = isPositive ? 'positive' : 'negative';
+                    const sign = isPositive ? '+' : '';
+
+                    tr.innerHTML = `
+                        <td><strong>${displayName}</strong></td>
+                        <td class="price text-right ${colorClass}">${sign}$${Math.abs(change).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td class="change text-right ${colorClass}">${sign}${Math.abs(changePct).toFixed(2)}%</td>
+                    `;
+                }
             }
             tbody.appendChild(tr);
         });
@@ -315,7 +335,7 @@ function renderChart(labels, dataPoints) {
     chartInstance = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: labels,
+            labels: labels, // Tooltip, bu eksiksiz etiketleri kullanır
             datasets: [{
                 label: 'Price',
                 data: dataPoints,
@@ -337,10 +357,10 @@ function renderChart(labels, dataPoints) {
                     mode: 'index',
                     intersect: false,
                     backgroundColor: 'rgba(17, 24, 39, 0.9)',
-                    titleFont: { family: 'Inter', size: 14, weight: '600' }, // Daha belirgin tooltip başlığı
+                    titleFont: { family: 'Inter', size: 14, weight: '600' }, 
                     bodyFont: { family: 'Inter', size: 14, weight: 'bold' },
                     padding: 12,
-                    displayColors: false, // GÜNCELLEME: Gereksiz renk kutucuğu/simge tamamen kaldırıldı
+                    displayColors: false, 
                     callbacks: {
                         label: function(context) {
                             return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
@@ -353,19 +373,30 @@ function renderChart(labels, dataPoints) {
                 x: { 
                     grid: { display: true, color: '#000000', drawBorder: true },
                     ticks: { 
-                        color: '#333333', // GÜNCELLEME: X Ekseni yazıları siliklikten kurtarıldı, koyu gri/siyah yapıldı
+                        color: '#333333', 
                         font: { family: 'Inter', weight: '500' },
                         maxTicksLimit: 6, 
                         maxRotation: 0, 
-                        autoSkip: true
+                        autoSkip: true,
+                        // GÜNCELLEME: Uzun periyotlarda (6M, 1Y, 5Y) alt eksendeki "Gün" bilgisini kaldırıyoruz.
+                        callback: function(val, index) {
+                            let label = this.getLabelForValue(val);
+                            if (['6M', '1Y', '5Y'].includes(currentPeriod)) {
+                                let parts = label.split(' '); // Örn: ["15", "Jan", "2025"]
+                                if (parts.length === 3) {
+                                    return parts[1] + ' ' + parts[2]; // Örn: "Jan 2025"
+                                }
+                            }
+                            return label;
+                        }
                     }
                 },
                 y: {
                     border: { display: false },
                     grid: { display: true, color: '#000000', drawBorder: true },
                     ticks: { 
-                        color: '#333333', // GÜNCELLEME: Y Ekseni fiyat yazıları koyulaştırıldı
-                        font: { family: 'Inter', weight: '600' }, // Daha kalın font
+                        color: '#333333', 
+                        font: { family: 'Inter', weight: '600' }, 
                         callback: function(value) { return '$' + value; } 
                     }
                 }
