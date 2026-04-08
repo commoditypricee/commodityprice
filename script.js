@@ -1,10 +1,10 @@
 /**
  * COMMODITY PRO - SECURE CLOUDFLARE PROXY ARCHITECTURE
- * Clean Syntax, Fixed Visuals: Blue Line, No Fill, Optimized Ticks
+ * Final Polish: Tooltip displayColors false, Bold Ticks, Full Date Formatting
  */
 
 // ============================================================================
-// 1. AYARLAR (PROXY YAPISI)
+// 1. AYARLAR (PROXY YAPISI KORUNDU)
 // LÜTFEN DİKKAT: Kendi URL'nizi eklerken tırnak işaretlerini (" ") SİLMEYİN!
 // ============================================================================
 const WORKER_URL = "https://yahoo-proxy.commodityprice.workers.dev";
@@ -152,12 +152,11 @@ async function getHistoricalData(ticker, period) {
             if (rawPrices[i] !== null) {
                 const dateObj = new Date(rawTimestamps[i] * 1000);
                 
+                // GÜNCELLEME: Uzun periyotlarda artık "15 Jan 2025" şeklinde kesin Gün, Ay, Yıl basılıyor.
                 if (period === '1D') {
                     labels.push(`${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`);
-                } else if (period === '1Y' || period === '5Y') {
-                    labels.push(`${dateObj.toLocaleString('en-US', { month: 'short' })} '${dateObj.getFullYear().toString().substr(-2)}`);
                 } else {
-                    labels.push(`${dateObj.getDate()} ${dateObj.toLocaleString('en-US', { month: 'short' })}`);
+                    labels.push(`${dateObj.getDate()} ${dateObj.toLocaleString('en-US', { month: 'short' })} ${dateObj.getFullYear()}`);
                 }
                 
                 prices.push(rawPrices[i]);
@@ -278,7 +277,7 @@ async function selectCommodity(commodity) {
 }
 
 // ============================================================================
-// 5. CHART.JS RENDERING (Blue Line, No Fill, Optimized X-Axis Ticks)
+// 5. CHART.JS RENDERING
 // ============================================================================
 
 async function loadChartData(commodity, period) {
@@ -320,12 +319,12 @@ function renderChart(labels, dataPoints) {
             datasets: [{
                 label: 'Price',
                 data: dataPoints,
-                borderColor: '#007bff', // Sabit Mavi Renk
+                borderColor: '#007bff', 
                 backgroundColor: 'transparent',
                 borderWidth: 3.5, 
                 pointRadius: 0,
                 pointHoverRadius: 6,
-                fill: false, // Alan taraması tamamen kaldırıldı
+                fill: false, 
                 tension: 0.15
             }]
         },
@@ -338,9 +337,10 @@ function renderChart(labels, dataPoints) {
                     mode: 'index',
                     intersect: false,
                     backgroundColor: 'rgba(17, 24, 39, 0.9)',
-                    titleFont: { family: 'Inter', size: 13 },
+                    titleFont: { family: 'Inter', size: 14, weight: '600' }, // Daha belirgin tooltip başlığı
                     bodyFont: { family: 'Inter', size: 14, weight: 'bold' },
                     padding: 12,
+                    displayColors: false, // GÜNCELLEME: Gereksiz renk kutucuğu/simge tamamen kaldırıldı
                     callbacks: {
                         label: function(context) {
                             return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
@@ -353,8 +353,9 @@ function renderChart(labels, dataPoints) {
                 x: { 
                     grid: { display: true, color: '#000000', drawBorder: true },
                     ticks: { 
-                        font: { family: 'Inter' },
-                        maxTicksLimit: 6, // X Ekseni etiket sayısı sadeleştirildi
+                        color: '#333333', // GÜNCELLEME: X Ekseni yazıları siliklikten kurtarıldı, koyu gri/siyah yapıldı
+                        font: { family: 'Inter', weight: '500' },
+                        maxTicksLimit: 6, 
                         maxRotation: 0, 
                         autoSkip: true
                     }
@@ -363,7 +364,8 @@ function renderChart(labels, dataPoints) {
                     border: { display: false },
                     grid: { display: true, color: '#000000', drawBorder: true },
                     ticks: { 
-                        font: { family: 'Inter', weight: '500' },
+                        color: '#333333', // GÜNCELLEME: Y Ekseni fiyat yazıları koyulaştırıldı
+                        font: { family: 'Inter', weight: '600' }, // Daha kalın font
                         callback: function(value) { return '$' + value; } 
                     }
                 }
