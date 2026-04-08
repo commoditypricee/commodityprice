@@ -4,7 +4,7 @@
  */
 
 // 1. AYARLAR (PROXY YAPISI)
-const WORKER_URL = "yahoo-proxy.commodityprice.workers.dev; // Kendi URL'ni buraya yaz!
+const WORKER_URL = "yahoo-proxy.commodityprice.workers.dev"; // Kendi URL'ni buraya yaz!
 const PROXY_SECRET = "CommoditySecure2026"; 
 
 const commodities = [
