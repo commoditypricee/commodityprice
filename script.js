@@ -87,8 +87,7 @@ function renderInitialValues() {
 
     updateTableDOM(initialData);
     updatePerformanceTable(currentCommodity);
-    const activeData = initialData.find(item => item.symbol === currentCommodity.ticker);
-    if(activeData) updateChartHeaderStats(activeData);
+    // SADELEŞTİRME:updateChartHeaderStats silindi, initial titles renderChart içinde çözüldü
 }
 
 async function initApp() {
@@ -102,7 +101,7 @@ async function initApp() {
 }
 
 // ============================================================================
-// 3. SECURE DATA FETCHING
+// 3. SECURE DATA FETCHING (DOKUNULMADI)
 // ============================================================================
 
 async function syncLivePrices() {
@@ -131,7 +130,7 @@ async function syncLivePrices() {
         const activeLiveData = results.find(item => item.symbol === currentCommodity.ticker);
         if (activeLiveData && activeLiveData.regularMarketPrice) {
             updateLiveChartPoint(activeLiveData.regularMarketPrice);
-            updateChartHeaderStats(activeLiveData);
+            // SADELEŞTİRME: updateChartHeaderStats silindi.
         }
         
         updatePerformanceTable(currentCommodity);
@@ -246,19 +245,8 @@ function updateTableDOM(apiDataArray) {
     });
 }
 
-function updateChartHeaderStats(liveData) {
-    const statsContainer = document.getElementById('chart-current-stats');
-    if (!statsContainer || !liveData) return;
-
-    const isPositive = liveData.regularMarketChange >= 0;
-    const colorClass = isPositive ? 'positive' : 'negative';
-    const sign = isPositive ? '+' : '';
-
-    statsContainer.innerHTML = `
-        <span class="stat-price">$${liveData.regularMarketPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-        <span class="stat-change ${colorClass}">${sign}${liveData.regularMarketChangePercent.toFixed(2)}%</span>
-    `;
-}
+// GÜNCELLEME SADELEŞTİRME: Fiyat ve yüzdeyi grafiğin yanına basan bu fonksiyon silindi.
+// HTML'deki id="chart-current-stats" silindi.
 
 async function updatePerformanceTable(commodity) {
     const titleEl = document.getElementById('perf-title');
@@ -301,7 +289,7 @@ async function updatePerformanceTable(commodity) {
                 `;
             } else {
                 if (!data || data.prices.length === 0) {
-                    tr.innerHTML = `<td><strong>${displayName}</strong></td><td colspan="2" class="text-right" style="color:var(--text-muted)">Data unavailable</td>`;
+                    tr.innerHTML = `<td><strong>${displayName}</strong></td><td colspan="2" class="text-right" style="color:#64748B">Data unavailable</td>`;
                 } else {
                     const oldPrice = data.prices[0];
                     const change = liveData.price - oldPrice;
@@ -321,7 +309,7 @@ async function updatePerformanceTable(commodity) {
             tbody.appendChild(tr);
         });
     } catch (error) {
-        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--color-down);">Failed to load metrics</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#EF4444;">Failed to load performance metrics</td></tr>`;
     }
 }
 
@@ -415,7 +403,8 @@ function renderChart(labels, dataPoints) {
                     displayColors: false, 
                     callbacks: {
                         label: function(context) {
-                            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
+                            // GÜNCELLEME Tooltip: Fiyat yuvarlama ve formatlama sorunsuz çalışıyor.
+                            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(context.parsed.y);
                         }
                     }
                 }
@@ -447,7 +436,8 @@ function renderChart(labels, dataPoints) {
                     ticks: { 
                         color: '#334155', 
                         font: { family: 'Inter', size: 12, weight: '700' }, 
-                        // Y ekseni float hatası kalıcı çözümü: Formatlama eklendi
+                        // DÜZELTME Y Ekseni Float Hatası: Bu callback para birimi formatlayıcısı ile güncellendi.
+                        // $5.6000000000000001 gibi uzun küsüratlar engellendi.
                         callback: function(value) { 
                             return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
                         } 
