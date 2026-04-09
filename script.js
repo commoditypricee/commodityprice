@@ -1,10 +1,10 @@
 /**
  * COMMODITY PRICE TRACKER - SECURE CLOUDFLARE PROXY ARCHITECTURE
- * Stable Production Build: 100% Real Data, Synchronized Tables, Premium UI
+ * Final Polish: Custom Bounding Box Plugin for Perfect Chart Borders
  */
 
 // ============================================================================
-// 1. AYARLAR (PROXY YAPISI)
+// 1. AYARLAR (PROXY YAPISI KORUNDU)
 // ============================================================================
 const WORKER_URL = "https://yahoo-proxy.commodityprice.workers.dev";
 const PROXY_SECRET = "CommoditySecure2026"; 
@@ -21,7 +21,7 @@ let currentCommodity = commodities[0];
 let currentPeriod = '1D';
 let chartInstance = null;
 const chartCache = {}; 
-let livePricesMap = {}; // Fiyat ve Değişim Senkronizasyon Hafızası
+let livePricesMap = {}; // Senkronizasyon için anlık veriler
 
 const fetchOptions = {
     method: 'GET',
@@ -92,7 +92,6 @@ async function syncLivePrices() {
         
         if (!Array.isArray(results) || results.length === 0) throw new Error("Invalid live data format from API");
 
-        // Tüm anlık değişim verilerini (24H Change) global hafızaya kaydediyoruz (Senkronizasyon için)
         results.forEach(item => {
             livePricesMap[item.symbol] = {
                 price: item.regularMarketPrice,
@@ -157,7 +156,6 @@ async function getHistoricalData(ticker, period) {
             if (rawPrices[i] !== null) {
                 const dateObj = new Date(rawTimestamps[i] * 1000);
                 
-                // Tooltip için kesin tarih formatı (X ekseni görünümü renderChart içinde daraltılır)
                 if (period === '1D') {
                     labels.push(`${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`);
                 } else {
@@ -246,7 +244,6 @@ async function updatePerformanceTable(commodity) {
             const displayName = displayNames[index];
             const tr = document.createElement('tr');
             
-            // "Today" satırı 24H Change ile birebir senkronize edilir (Tek Gerçeklik Kaynağı)
             if (period === '1D') {
                 const change = liveData.change;
                 const changePct = liveData.changePercent;
@@ -297,7 +294,7 @@ async function selectCommodity(commodity) {
 }
 
 // ============================================================================
-// 5. CHART.JS RENDERING (Stable & Static Build)
+// 5. CHART.JS RENDERING (Perfect Bounding Box Integration)
 // ============================================================================
 
 async function loadChartData(commodity, period) {
@@ -317,7 +314,6 @@ async function loadChartData(commodity, period) {
     }
 }
 
-// Grafiğin sadece en son noktasını günceller (Gerçekçi ve Statik)
 function updateLiveChartPoint(newPrice) {
     if (!chartInstance) return;
     const dataPoints = chartInstance.data.datasets[0].data;
@@ -331,6 +327,21 @@ function renderChart(labels, dataPoints) {
     
     const ctx = canvas.getContext('2d');
     if (chartInstance) chartInstance.destroy();
+
+    // YENİ: Grafiğin her 4 köşesini kusursuzca kapatan özel eklenti (Plugin)
+    const boundingBoxPlugin = {
+        id: 'chartBoundingBox',
+        beforeDraw(chart) {
+            const { ctx, chartArea } = chart;
+            if (!chartArea) return;
+            ctx.save();
+            ctx.strokeStyle = '#000000'; // Kılavuz (grid) çizgileri ile aynı renk
+            ctx.lineWidth = 1;
+            // Çizim alanının sol üst köşesinden başlayıp sağ alt köşesine kadar bir dikdörtgen çizer
+            ctx.strokeRect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
+            ctx.restore();
+        }
+    };
 
     chartInstance = new Chart(ctx, {
         type: 'line',
@@ -371,7 +382,7 @@ function renderChart(labels, dataPoints) {
             interaction: { mode: 'nearest', axis: 'x', intersect: false },
             scales: {
                 x: { 
-                    grid: { display: true, color: '#000000', drawBorder: true },
+                    grid: { display: true, color: '#000000', drawBorder: false }, // Dış çizimi plugin yaptığı için drawBorder kapalı
                     ticks: { 
                         color: '#333333', 
                         font: { family: 'Inter', weight: '500' },
@@ -391,8 +402,7 @@ function renderChart(labels, dataPoints) {
                     }
                 },
                 y: {
-                    border: { display: false },
-                    grid: { display: true, color: '#000000', drawBorder: true },
+                    grid: { display: true, color: '#000000', drawBorder: false }, // Dış çizimi plugin yaptığı için drawBorder kapalı
                     ticks: { 
                         color: '#333333', 
                         font: { family: 'Inter', weight: '600' }, 
@@ -400,7 +410,9 @@ function renderChart(labels, dataPoints) {
                     }
                 }
             }
-        }
+        },
+        // Eklentiyi grafiğe dahil ediyoruz
+        plugins: [boundingBoxPlugin]
     });
 }
 
