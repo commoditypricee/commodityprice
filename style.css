@@ -1,7 +1,7 @@
 /* ==========================================================================
    PREMIUM LIGHT THEME & SAAS VARIABLES
    ========================================================================== */
-   :root {
+:root {
     --bg-body: #F3F4F6;        /* Slate 100 - Clean app background */
     --bg-surface: #FFFFFF;     /* White cards */
     --bg-hover: #F8FAFC;       /* Slate 50 */
@@ -43,6 +43,7 @@ body {
     position: sticky;
     top: 0;
     z-index: 100;
+    box-shadow: var(--shadow-card); 
 }
 
 .topbar-inner {
@@ -84,16 +85,21 @@ body {
 }
 
 /* ==========================================================================
-   DASHBOARD LAYOUT (GRID)
+   DASHBOARD LAYOUT (GRID) - HİZALAMA DÜZELTİLDİ
    ========================================================================== */
 .dashboard {
     display: grid;
-    /* GÜNCELLEME: Sol tablo geniş (400px), Grafik orantılı (1fr) */
     grid-template-columns: 400px 1fr;
     gap: 24px;
     padding-top: 32px;
     padding-bottom: 40px;
-    align-items: start;
+    /* GÜNCELLEME: İki kolonun da jilet gibi aynı üst hizadan başlamasını garanti eder */
+    align-items: flex-start; 
+}
+
+/* GÜNCELLEME: Fazladan margin-top ihtimallerine karşı sıfırlama yapıldı */
+.market-panel, .main-panel, .chart-card, .performance-card {
+    margin-top: 0 !important;
 }
 
 .market-panel, .chart-card, .performance-card {
@@ -111,7 +117,7 @@ body {
     border-bottom: 1px solid var(--border-subtle);
     background-color: #FAFAFA;
 }
-.panel-header h2 { font-size: 16px; font-weight: 700; color: var(--text-main); letter-spacing: -0.01em; }
+.panel-header h2 { font-size: 16px; font-weight: 700; color: var(--text-main); letter-spacing: -0.01em; margin: 0; }
 
 /* ==========================================================================
    MARKET OVERVIEW TABLE (Spacious but Compact)
@@ -142,15 +148,15 @@ body {
 
 .comm-info { display: flex; align-items: center; gap: 12px; }
 .comm-icon { font-size: 20px; }
-.comm-text h3 { font-size: 15px; font-weight: 700; color: var(--text-main); }
+.comm-text h3 { font-size: 15px; font-weight: 700; color: var(--text-main); margin: 0;}
 .comm-text span { font-size: 12px; font-weight: 600; color: var(--text-muted); }
 
 .price-val { font-size: 16px; font-weight: 700; color: var(--text-main); }
 .change-val { font-size: 14px; font-weight: 700; display: flex; flex-direction: column; align-items: flex-end; }
 .change-val span { font-size: 12px; font-weight: 600; margin-top: 2px; }
 
-.positive { color: var(--color-up); }
-.negative { color: var(--color-down); }
+.positive { color: var(--color-up) !important; }
+.negative { color: var(--color-down) !important; }
 
 /* ==========================================================================
    CHART CARD
@@ -166,7 +172,7 @@ body {
 }
 
 .chart-title-group { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
-.chart-title-group h2 { font-size: 24px; font-weight: 800; color: var(--text-main); letter-spacing: -0.03em; }
+.chart-title-group h2 { font-size: 24px; font-weight: 800; color: var(--text-main); letter-spacing: -0.03em; margin: 0;}
 
 .chart-stats {
     display: flex;
@@ -194,12 +200,11 @@ body {
 .chart-container { padding: 24px; height: 420px; width: 100%; position: relative; }
 
 /* ==========================================================================
-   COMPACT PERFORMANCE TABLE (Retro Finans Estetiği: Zebra Stripes & Compact)
+   COMPACT PERFORMANCE TABLE
    ========================================================================== */
 .perf-table-wrapper { width: 100%; overflow-x: auto; }
 .perf-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 
-/* Daha dar ve kompakt padding ayarları */
 .perf-table th {
     padding: 8px 16px;
     text-align: left;
@@ -211,17 +216,13 @@ body {
 }
 
 .perf-table td {
-    padding: 8px 16px; /* Hücreler daraltıldı */
+    padding: 8px 16px;
     border-bottom: 1px solid var(--border-subtle);
-    font-size: 12px; /* Font boyutu küçültüldü */
+    font-size: 12px; 
     font-weight: 600;
 }
 
-/* Zebra deseni: Satırların birbirine karışmasını engeller */
-.perf-table tbody tr:nth-child(even) {
-    background-color: #F8FAFC; 
-}
-
+.perf-table tbody tr:nth-child(even) { background-color: #F8FAFC; }
 .perf-table tbody tr:last-child td { border-bottom: none; }
 .perf-table tbody tr:hover { background-color: #F1F5F9; }
 .perf-table td strong { color: var(--text-main); font-weight: 700; }
