@@ -1,6 +1,6 @@
 /**
  * COMMODITY PRICE TRACKER - SECURE CLOUDFLARE PROXY ARCHITECTURE
- * Premium Dark Theme UI / Responsive Refactor
+ * Modern Light Theme, Custom Vector Icon, Compact Table & Responsive Design
  */
 
 // ============================================================================
@@ -9,12 +9,13 @@
 const WORKER_URL = "https://yahoo-proxy.commodityprice.workers.dev";
 const PROXY_SECRET = "CommoditySecure2026"; 
 
+// HTML'deki yeni SVG logo temasına uygun sadeleştirilmiş ikonlar
 const commodities = [
-    { id: 'gold', name: 'Gold', icon: '🥇', ticker: 'GC=F' },
-    { id: 'silver', name: 'Silver', icon: '🥈', ticker: 'SI=F' },
-    { id: 'copper', name: 'Copper', icon: '🥉', ticker: 'HG=F' },
-    { id: 'brent', name: 'Brent Oil', icon: '🛢️', ticker: 'BZ=F' },
-    { id: 'natgas', name: 'Natural Gas', icon: '💨', ticker: 'NG=F' }
+    { id: 'gold', name: 'Gold', icon: '●', ticker: 'GC=F' },
+    { id: 'silver', name: 'Silver', icon: '●', ticker: 'SI=F' },
+    { id: 'copper', name: 'Copper', icon: '●', ticker: 'HG=F' },
+    { id: 'brent', name: 'Brent Oil', icon: '●', ticker: 'BZ=F' },
+    { id: 'natgas', name: 'Natural Gas', icon: '●', ticker: 'NG=F' }
 ];
 
 let currentCommodity = commodities[0];
@@ -75,7 +76,7 @@ async function initApp() {
 }
 
 // ============================================================================
-// 3. SECURE DATA FETCHING
+// 3. SECURE DATA FETCHING (DOKUNULMADI)
 // ============================================================================
 
 async function syncLivePrices() {
@@ -112,7 +113,7 @@ async function syncLivePrices() {
         console.error("❌ Live sync failed:", error.message);
         const tbody = document.getElementById('table-body');
         if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--color-down); font-weight:bold;">Error loading data.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#DC2626; font-weight:bold;">Error loading data.</td></tr>`;
         }
     }
 }
@@ -204,7 +205,7 @@ function updateTableDOM(apiDataArray) {
 
         tr.innerHTML = `
             <td>
-                <div class="commodity-name">${comm.icon} ${comm.name}</div>
+                <div class="commodity-name">${comm.name}</div>
                 <div class="commodity-ticker">${comm.ticker}</div>
             </td>
             <td class="price text-right">$${currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
@@ -293,7 +294,7 @@ async function selectCommodity(commodity) {
 }
 
 // ============================================================================
-// 5. CHART.JS RENDERING (Dark Theme Configured)
+// 5. CHART.JS RENDERING (Light Theme Configured)
 // ============================================================================
 
 async function loadChartData(commodity, period) {
@@ -302,7 +303,7 @@ async function loadChartData(commodity, period) {
     
     try {
         const chartData = await getHistoricalData(commodity.ticker, period);
-        if (titleEl) titleEl.innerText = `${commodity.name} / USD`;
+        if (titleEl) titleEl.innerText = `${commodity.name} Price`;
         renderChart([...chartData.labels], [...chartData.prices]);
     } catch (error) {
         if (titleEl) titleEl.innerHTML = `<span style="color: var(--color-down);">Data unavailable for ${commodity.name}</span>`;
@@ -327,14 +328,14 @@ function renderChart(labels, dataPoints) {
     const ctx = canvas.getContext('2d');
     if (chartInstance) chartInstance.destroy();
 
-    // Custom Bounding Box - Dark Theme Colors
+    // Bounding Box (Kutuyu Kapatma) Eklentisi - Light Theme Border Rengi
     const boundingBoxPlugin = {
         id: 'chartBoundingBox',
         beforeDraw(chart) {
             const { ctx, chartArea } = chart;
             if (!chartArea) return;
             ctx.save();
-            ctx.strokeStyle = '#2B3139'; // Dark theme border
+            ctx.strokeStyle = '#E2E8F0'; // Light gray border
             ctx.lineWidth = 1;
             ctx.strokeRect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
             ctx.restore();
@@ -348,12 +349,12 @@ function renderChart(labels, dataPoints) {
             datasets: [{
                 label: 'Price',
                 data: dataPoints,
-                borderColor: '#2962FF', // Premium Blue
+                borderColor: '#2563EB', // Strong Blue (Tek renk isteği)
                 backgroundColor: 'transparent',
-                borderWidth: 2, 
+                borderWidth: 2.5, 
                 pointRadius: 0,
                 pointHoverRadius: 5,
-                fill: false, 
+                fill: false, // Alan taraması iptali korundu
                 tension: 0.1
             }]
         },
@@ -365,15 +366,13 @@ function renderChart(labels, dataPoints) {
                 tooltip: {
                     mode: 'index',
                     intersect: false,
-                    backgroundColor: '#181A20', // Dark Tooltip
-                    borderColor: '#2B3139',
-                    borderWidth: 1,
-                    titleColor: '#848E9C',
-                    bodyColor: '#EAECEF',
+                    backgroundColor: '#0F172A', 
+                    titleColor: '#F8FAFC',
+                    bodyColor: '#F8FAFC',
                     titleFont: { family: 'Inter', size: 12, weight: '500' }, 
-                    bodyFont: { family: 'JetBrains Mono', size: 14, weight: 'bold' },
+                    bodyFont: { family: 'Inter', size: 14, weight: 'bold' },
                     padding: 10,
-                    displayColors: false, 
+                    displayColors: false, // Simge iptali korundu
                     callbacks: {
                         label: function(context) {
                             return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
@@ -384,11 +383,11 @@ function renderChart(labels, dataPoints) {
             interaction: { mode: 'nearest', axis: 'x', intersect: false },
             scales: {
                 x: { 
-                    grid: { display: true, color: '#2B3139', drawBorder: false }, // Dark grid
+                    grid: { display: true, color: '#E2E8F0', drawBorder: false }, // Light grid
                     ticks: { 
-                        color: '#848E9C', 
-                        font: { family: 'Inter', size: 11 },
-                        maxTicksLimit: 6, 
+                        color: '#64748B', // Muted label color
+                        font: { family: 'Inter', size: 11, weight: '500' },
+                        maxTicksLimit: 6, // Eksen sadeleştirme korundu
                         maxRotation: 0, 
                         autoSkip: true,
                         callback: function(val, index) {
@@ -404,10 +403,10 @@ function renderChart(labels, dataPoints) {
                     }
                 },
                 y: {
-                    grid: { display: true, color: '#2B3139', drawBorder: false },
+                    grid: { display: true, color: '#E2E8F0', drawBorder: false },
                     ticks: { 
-                        color: '#848E9C', 
-                        font: { family: 'JetBrains Mono', size: 11 }, 
+                        color: '#0F172A', // Dark text for readability
+                        font: { family: 'Inter', size: 12, weight: '600' }, 
                         callback: function(value) { return '$' + value; } 
                     }
                 }
