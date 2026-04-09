@@ -43,6 +43,7 @@ body {
     position: sticky;
     top: 0;
     z-index: 100;
+    box-shadow: var(--shadow-card); /* Hafif gölge eklendi */
 }
 
 .topbar-inner {
@@ -88,7 +89,6 @@ body {
    ========================================================================== */
 .dashboard {
     display: grid;
-    /* GÜNCELLEME: Sol tablo geniş (400px), Grafik orantılı (1fr) */
     grid-template-columns: 400px 1fr;
     gap: 24px;
     padding-top: 32px;
@@ -149,8 +149,8 @@ body {
 .change-val { font-size: 14px; font-weight: 700; display: flex; flex-direction: column; align-items: flex-end; }
 .change-val span { font-size: 12px; font-weight: 600; margin-top: 2px; }
 
-.positive { color: var(--color-up); }
-.negative { color: var(--color-down); }
+.positive { color: var(--color-up) !important; }
+.negative { color: var(--color-down) !important; }
 
 /* ==========================================================================
    CHART CARD
@@ -194,14 +194,14 @@ body {
 .chart-container { padding: 24px; height: 420px; width: 100%; position: relative; }
 
 /* ==========================================================================
-   COMPACT PERFORMANCE TABLE (Massively Compact)
+   COMPACT PERFORMANCE TABLE (Zebra Stripes & Ultra Compact)
    ========================================================================== */
 .perf-table-wrapper { width: 100%; overflow-x: auto; }
 .perf-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 
-/* GÜNCELLEME: Hücreler çok daha dar ve minimalist yapıldı */
+/* Daha dar ve kompakt padding ayarları */
 .perf-table th {
-    padding: 8px 24px;
+    padding: 8px 16px;
     text-align: left;
     font-size: 11px;
     font-weight: 700;
@@ -209,21 +209,29 @@ body {
     border-bottom: 2px solid var(--border-subtle);
     background-color: #FAFAFA;
 }
+
 .perf-table td {
-    padding: 8px 24px; /* Dramatik şekilde küçültüldü */
+    padding: 8px 16px; /* Hücreler daraltıldı */
     border-bottom: 1px solid var(--border-subtle);
-    font-size: 13px;
+    font-size: 12px; /* Font boyutu küçültüldü */
     font-weight: 600;
 }
+
+/* Zebra deseni: Satırların birbirine karışmasını engeller */
+.perf-table tbody tr:nth-child(even) {
+    background-color: #F8FAFC; 
+}
+
 .perf-table tbody tr:last-child td { border-bottom: none; }
+.perf-table tbody tr:hover { background-color: #F1F5F9; }
 .perf-table td strong { color: var(--text-main); font-weight: 700; }
 
 /* ==========================================================================
    RESPONSIVE DESIGN (MOBILE & TABLET)
    ========================================================================== */
 @media (max-width: 1024px) {
-    .dashboard { grid-template-columns: 1fr; padding-top: 24px; }
-    .chart-container { height: 350px; }
+    .dashboard { grid-template-columns: 1fr; gap: 20px; padding: 0 16px; margin: 16px auto; }
+    .sidebar { max-width: 100%; } 
 }
 
 @media (max-width: 640px) {
@@ -233,4 +241,5 @@ body {
     .filter-btn { padding: 8px 10px; flex: 1; }
     .overview-table td, .overview-table th { padding: 12px 16px; }
     .perf-table td, .perf-table th { padding: 8px 16px; }
+    .chart-container { height: 320px; padding: 10px; }
 }
