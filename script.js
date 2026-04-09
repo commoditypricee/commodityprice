@@ -1,6 +1,6 @@
 /**
  * COMMODITY PRICE TRACKER - SECURE CLOUDFLARE PROXY ARCHITECTURE
- * Final Polish: Custom Bounding Box Plugin for Perfect Chart Borders
+ * Premium Dark Theme UI / Responsive Refactor
  */
 
 // ============================================================================
@@ -21,7 +21,7 @@ let currentCommodity = commodities[0];
 let currentPeriod = '1D';
 let chartInstance = null;
 const chartCache = {}; 
-let livePricesMap = {}; // Senkronizasyon için anlık veriler
+let livePricesMap = {}; 
 
 const fetchOptions = {
     method: 'GET',
@@ -44,7 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initApp();
     setupEventListeners();
     
-    // Gerçek veri için 15 dakikalık stabil döngü
     setInterval(() => {
         syncLivePrices();
     }, 15 * 60 * 1000);
@@ -56,7 +55,7 @@ function startLiveClock() {
     
     function updateTime() {
         const now = new Date();
-        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
         const dateStr = now.toLocaleDateString('en-US', dateOptions);
         const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
         clockEl.innerText = `${dateStr} | ${timeStr}`;
@@ -113,7 +112,7 @@ async function syncLivePrices() {
         console.error("❌ Live sync failed:", error.message);
         const tbody = document.getElementById('table-body');
         if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#ef4444; font-weight:bold;">Error loading live prices.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--color-down); font-weight:bold;">Error loading data.</td></tr>`;
         }
     }
 }
@@ -205,13 +204,13 @@ function updateTableDOM(apiDataArray) {
 
         tr.innerHTML = `
             <td>
-                <div class="commodity-name"><span style="font-size: 1.2rem;">${comm.icon}</span> ${comm.name}</div>
-                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px;">${comm.ticker}</div>
+                <div class="commodity-name">${comm.icon} ${comm.name}</div>
+                <div class="commodity-ticker">${comm.ticker}</div>
             </td>
             <td class="price text-right">$${currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
             <td class="change text-right ${isPositive ? 'positive' : 'negative'}">
-                ${isPositive ? '+' : ''}${changeValue.toFixed(2)}<br>
-                <span style="font-size: 0.8rem; opacity: 0.8;">${isPositive ? '+' : ''}${changePercent.toFixed(2)}%</span>
+                ${isPositive ? '+' : ''}${changeValue.toFixed(2)}
+                <span>${isPositive ? '+' : ''}${changePercent.toFixed(2)}%</span>
             </td>
         `;
         tbody.appendChild(tr);
@@ -220,14 +219,14 @@ function updateTableDOM(apiDataArray) {
 
 async function updatePerformanceTable(commodity) {
     const titleEl = document.getElementById('perf-title');
-    if (titleEl) titleEl.innerText = `${commodity.name} Price Performance`;
+    if (titleEl) titleEl.innerText = `${commodity.name} Performance`;
 
     const fetchPeriods = ['1D', '1M', '6M', '1Y', '5Y'];
     const displayNames = ['Today', '1 Month', '6 Months', '1 Year', '5 Years']; 
     const tbody = document.getElementById('perf-table-body');
     if (!tbody) return;
     
-    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: #6b7280; padding: 20px;">Analyzing data...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: var(--text-muted); padding: 20px;">Analyzing data...</td></tr>';
 
     try {
         const liveData = livePricesMap[commodity.ticker];
@@ -258,7 +257,7 @@ async function updatePerformanceTable(commodity) {
                 `;
             } else {
                 if (!data || data.prices.length === 0) {
-                    tr.innerHTML = `<td><strong>${displayName}</strong></td><td colspan="2" class="text-right" style="color:#6b7280">Data unavailable</td>`;
+                    tr.innerHTML = `<td><strong>${displayName}</strong></td><td colspan="2" class="text-right" style="color:var(--text-muted)">Data unavailable</td>`;
                 } else {
                     const oldPrice = data.prices[0];
                     const change = liveData.price - oldPrice;
@@ -278,7 +277,7 @@ async function updatePerformanceTable(commodity) {
             tbody.appendChild(tr);
         });
     } catch (error) {
-        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#ef4444;">Failed to load performance metrics</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--color-down);">Failed to load metrics</td></tr>`;
     }
 }
 
@@ -287,26 +286,26 @@ async function selectCommodity(commodity) {
     currentCommodity = commodity;
     
     const chartTitleEl = document.getElementById('chart-title');
-    if (chartTitleEl) chartTitleEl.innerText = `Loading ${commodity.name} Price...`;
+    if (chartTitleEl) chartTitleEl.innerText = `Loading ${commodity.name}...`;
     
     syncLivePrices(); 
     loadChartData(currentCommodity, currentPeriod);
 }
 
 // ============================================================================
-// 5. CHART.JS RENDERING (Perfect Bounding Box Integration)
+// 5. CHART.JS RENDERING (Dark Theme Configured)
 // ============================================================================
 
 async function loadChartData(commodity, period) {
     const titleEl = document.getElementById('chart-title');
-    if (titleEl) titleEl.innerText = `Loading ${commodity.name} Price...`;
+    if (titleEl) titleEl.innerText = `Loading ${commodity.name}...`;
     
     try {
         const chartData = await getHistoricalData(commodity.ticker, period);
-        if (titleEl) titleEl.innerText = `${commodity.name} Price`;
+        if (titleEl) titleEl.innerText = `${commodity.name} / USD`;
         renderChart([...chartData.labels], [...chartData.prices]);
     } catch (error) {
-        if (titleEl) titleEl.innerHTML = `<span style="color: #ef4444;">Data unavailable for ${commodity.name} (${period})</span>`;
+        if (titleEl) titleEl.innerHTML = `<span style="color: var(--color-down);">Data unavailable for ${commodity.name}</span>`;
         if (chartInstance) {
             chartInstance.destroy();
             chartInstance = null;
@@ -328,16 +327,15 @@ function renderChart(labels, dataPoints) {
     const ctx = canvas.getContext('2d');
     if (chartInstance) chartInstance.destroy();
 
-    // YENİ: Grafiğin her 4 köşesini kusursuzca kapatan özel eklenti (Plugin)
+    // Custom Bounding Box - Dark Theme Colors
     const boundingBoxPlugin = {
         id: 'chartBoundingBox',
         beforeDraw(chart) {
             const { ctx, chartArea } = chart;
             if (!chartArea) return;
             ctx.save();
-            ctx.strokeStyle = '#000000'; // Kılavuz (grid) çizgileri ile aynı renk
+            ctx.strokeStyle = '#2B3139'; // Dark theme border
             ctx.lineWidth = 1;
-            // Çizim alanının sol üst köşesinden başlayıp sağ alt köşesine kadar bir dikdörtgen çizer
             ctx.strokeRect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
             ctx.restore();
         }
@@ -350,13 +348,13 @@ function renderChart(labels, dataPoints) {
             datasets: [{
                 label: 'Price',
                 data: dataPoints,
-                borderColor: '#007bff', 
+                borderColor: '#2962FF', // Premium Blue
                 backgroundColor: 'transparent',
-                borderWidth: 3.5, 
+                borderWidth: 2, 
                 pointRadius: 0,
-                pointHoverRadius: 6,
+                pointHoverRadius: 5,
                 fill: false, 
-                tension: 0.15
+                tension: 0.1
             }]
         },
         options: {
@@ -367,10 +365,14 @@ function renderChart(labels, dataPoints) {
                 tooltip: {
                     mode: 'index',
                     intersect: false,
-                    backgroundColor: 'rgba(17, 24, 39, 0.9)',
-                    titleFont: { family: 'Inter', size: 14, weight: '600' }, 
-                    bodyFont: { family: 'Inter', size: 14, weight: 'bold' },
-                    padding: 12,
+                    backgroundColor: '#181A20', // Dark Tooltip
+                    borderColor: '#2B3139',
+                    borderWidth: 1,
+                    titleColor: '#848E9C',
+                    bodyColor: '#EAECEF',
+                    titleFont: { family: 'Inter', size: 12, weight: '500' }, 
+                    bodyFont: { family: 'JetBrains Mono', size: 14, weight: 'bold' },
+                    padding: 10,
                     displayColors: false, 
                     callbacks: {
                         label: function(context) {
@@ -382,10 +384,10 @@ function renderChart(labels, dataPoints) {
             interaction: { mode: 'nearest', axis: 'x', intersect: false },
             scales: {
                 x: { 
-                    grid: { display: true, color: '#000000', drawBorder: false }, // Dış çizimi plugin yaptığı için drawBorder kapalı
+                    grid: { display: true, color: '#2B3139', drawBorder: false }, // Dark grid
                     ticks: { 
-                        color: '#333333', 
-                        font: { family: 'Inter', weight: '500' },
+                        color: '#848E9C', 
+                        font: { family: 'Inter', size: 11 },
                         maxTicksLimit: 6, 
                         maxRotation: 0, 
                         autoSkip: true,
@@ -402,16 +404,15 @@ function renderChart(labels, dataPoints) {
                     }
                 },
                 y: {
-                    grid: { display: true, color: '#000000', drawBorder: false }, // Dış çizimi plugin yaptığı için drawBorder kapalı
+                    grid: { display: true, color: '#2B3139', drawBorder: false },
                     ticks: { 
-                        color: '#333333', 
-                        font: { family: 'Inter', weight: '600' }, 
+                        color: '#848E9C', 
+                        font: { family: 'JetBrains Mono', size: 11 }, 
                         callback: function(value) { return '$' + value; } 
                     }
                 }
             }
         },
-        // Eklentiyi grafiğe dahil ediyoruz
         plugins: [boundingBoxPlugin]
     });
 }
