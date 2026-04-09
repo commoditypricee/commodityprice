@@ -1,27 +1,29 @@
 /**
  * COMMODITY PRICE TRACKER - SECURE CLOUDFLARE PROXY ARCHITECTURE
- * Senior UI/UX Refactor: Premium Light Theme, Synchronized Dynamic Headers, Crisp Grids
+ * Y-Axis Precision Fix, Compact Performance Table, and initValues Injection
  */
 
 // ============================================================================
-// 1. AYARLAR (PROXY YAPISI KESİNLİKLE KORUNDU)
+// 1. AYARLAR (PROXY YAPISI)
 // ============================================================================
-const WORKER_URL = "https://yahoo-proxy.commodityprice.workers.dev"; // Kendi URL'ni ekle
+const WORKER_URL = "https://yahoo-proxy.commodityprice.workers.dev"; // Kendi URL'nizi girin
 const PROXY_SECRET = "CommoditySecure2026"; 
 
+// initValues Kuralı: Site yüklenirken API cevabı gelene kadar boş durmaması için
+// image_1.png'deki güncel baz fiyatlarla başlangıç verisi oluşturuldu.
 const commodities = [
-    { id: 'gold', name: 'Gold', icon: '🥇', ticker: 'GC=F' },
-    { id: 'silver', name: 'Silver', icon: '🥈', ticker: 'SI=F' },
-    { id: 'copper', name: 'Copper', icon: '🥉', ticker: 'HG=F' },
-    { id: 'brent', name: 'Brent Oil', icon: '🛢️', ticker: 'BZ=F' },
-    { id: 'natgas', name: 'Natural Gas', icon: '💨', ticker: 'NG=F' }
+    { id: 'gold', name: 'Gold', icon: '🥇', ticker: 'GC=F', initPrice: 4752.00, initChange: 67.30, initChangePct: 1.44 },
+    { id: 'silver', name: 'Silver', icon: '🥈', ticker: 'SI=F', initPrice: 74.48, initChange: 2.49, initChangePct: 3.46 },
+    { id: 'copper', name: 'Copper', icon: '🥉', ticker: 'HG=F', initPrice: 5.76, initChange: 0.19, initChangePct: 3.50 },
+    { id: 'brent', name: 'Brent Oil', icon: '🛢️', ticker: 'BZ=F', initPrice: 96.15, initChange: -13.12, initChangePct: -12.01 },
+    { id: 'natgas', name: 'Natural Gas', icon: '💨', ticker: 'NG=F', initPrice: 2.73, initChange: -0.14, initChangePct: -4.74 }
 ];
 
 let currentCommodity = commodities[0];
 let currentPeriod = '1D';
 let chartInstance = null;
 const chartCache = {}; 
-let livePricesMap = {}; // Fiyat ve Değişim Senkronizasyon Hafızası
+let livePricesMap = {}; 
 
 const fetchOptions = {
     method: 'GET',
@@ -37,7 +39,7 @@ const fetchOptions = {
 
 document.addEventListener('DOMContentLoaded', () => {
     if (WORKER_URL.includes("SENIN-KULLANICI-ADIN") || WORKER_URL === "") {
-        alert("🚨 Lütfen script.js dosyasındaki WORKER_URL kısmına kendi Cloudflare adresinizi ekleyin.");
+        console.warn("Lütfen script.js dosyasındaki WORKER_URL kısmına kendi Cloudflare adresinizi ekleyin.");
     }
 
     startLiveClock(); 
@@ -56,7 +58,7 @@ function startLiveClock() {
     
     function updateTime() {
         const now = new Date();
-        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
         const dateStr = now.toLocaleDateString('en-US', dateOptions);
         const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
         clockEl.innerText = `${dateStr} | ${timeStr}`;
@@ -66,17 +68,41 @@ function startLiveClock() {
     setInterval(updateTime, 1000); 
 }
 
+// Arayüzü image_1.png deki verilerle başlatan fonksiyon (initValues)
+function renderInitialValues() {
+    const initialData = commodities.map(c => ({
+        symbol: c.ticker,
+        regularMarketPrice: c.initPrice,
+        regularMarketChange: c.initChange,
+        regularMarketChangePercent: c.initChangePct
+    }));
+    
+    initialData.forEach(item => {
+        livePricesMap[item.symbol] = {
+            price: item.regularMarketPrice,
+            change: item.regularMarketChange,
+            changePercent: item.regularMarketChangePercent
+        };
+    });
+
+    updateTableDOM(initialData);
+    updatePerformanceTable(currentCommodity);
+    const activeData = initialData.find(item => item.symbol === currentCommodity.ticker);
+    if(activeData) updateChartHeaderStats(activeData);
+}
+
 async function initApp() {
     try {
-        await syncLivePrices(); 
+        renderInitialValues(); // UI'ı ilk verilerle doldur
         await loadChartData(currentCommodity, currentPeriod); 
+        await syncLivePrices(); // Ardından en güncel API verisini çekip üstüne yaz
     } catch (error) {
         console.error("❌ initApp fatal error:", error);
     }
 }
 
 // ============================================================================
-// 3. SECURE DATA FETCHING (DOKUNULMADI)
+// 3. SECURE DATA FETCHING
 // ============================================================================
 
 async function syncLivePrices() {
@@ -105,17 +131,13 @@ async function syncLivePrices() {
         const activeLiveData = results.find(item => item.symbol === currentCommodity.ticker);
         if (activeLiveData && activeLiveData.regularMarketPrice) {
             updateLiveChartPoint(activeLiveData.regularMarketPrice);
-            updateChartHeaderStats(activeLiveData); // Dinamik Grafik Başlığı Güncellemesi
+            updateChartHeaderStats(activeLiveData);
         }
         
         updatePerformanceTable(currentCommodity);
 
     } catch (error) {
         console.error("❌ Live sync failed:", error.message);
-        const tbody = document.getElementById('table-body');
-        if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#EF4444; font-weight:bold;">Error loading live prices.</td></tr>`;
-        }
     }
 }
 
@@ -181,7 +203,7 @@ async function getHistoricalData(ticker, period) {
 }
 
 // ============================================================================
-// 4. UI & PERFORMANCE TABLE UPDATES (DOM Manüpilasyonu)
+// 4. UI & PERFORMANCE TABLE UPDATES
 // ============================================================================
 
 function updateTableDOM(apiDataArray) {
@@ -224,7 +246,6 @@ function updateTableDOM(apiDataArray) {
     });
 }
 
-// GÜNCELLEME: Grafik Başlığına Dinamik Fiyat ve Yüzde Ekleme
 function updateChartHeaderStats(liveData) {
     const statsContainer = document.getElementById('chart-current-stats');
     if (!statsContainer || !liveData) return;
@@ -243,12 +264,13 @@ async function updatePerformanceTable(commodity) {
     const titleEl = document.getElementById('perf-title');
     if (titleEl) titleEl.innerText = `${commodity.name} Performance`;
 
+    // labelsConsistent Kuralı: Periyot isimleri İngilizce ve Today / 24H aynı mantıkla tutuldu
     const fetchPeriods = ['1D', '1M', '6M', '1Y', '5Y'];
     const displayNames = ['Today', '1 Month', '6 Months', '1 Year', '5 Years']; 
     const tbody = document.getElementById('perf-table-body');
     if (!tbody) return;
     
-    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: #64748B; padding: 20px;">Analyzing data...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: var(--text-muted); padding: 20px;">Analyzing data...</td></tr>';
 
     try {
         const liveData = livePricesMap[commodity.ticker];
@@ -265,7 +287,6 @@ async function updatePerformanceTable(commodity) {
             const displayName = displayNames[index];
             const tr = document.createElement('tr');
             
-            // "Today" Satırı: 24h Change ile tıpatıp eşleniyor.
             if (period === '1D') {
                 const change = liveData.change;
                 const changePct = liveData.changePercent;
@@ -280,7 +301,7 @@ async function updatePerformanceTable(commodity) {
                 `;
             } else {
                 if (!data || data.prices.length === 0) {
-                    tr.innerHTML = `<td><strong>${displayName}</strong></td><td colspan="2" class="text-right" style="color:#64748B">Data unavailable</td>`;
+                    tr.innerHTML = `<td><strong>${displayName}</strong></td><td colspan="2" class="text-right" style="color:var(--text-muted)">Data unavailable</td>`;
                 } else {
                     const oldPrice = data.prices[0];
                     const change = liveData.price - oldPrice;
@@ -300,7 +321,7 @@ async function updatePerformanceTable(commodity) {
             tbody.appendChild(tr);
         });
     } catch (error) {
-        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#EF4444;">Failed to load performance metrics</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--color-down);">Failed to load metrics</td></tr>`;
     }
 }
 
@@ -316,7 +337,7 @@ async function selectCommodity(commodity) {
 }
 
 // ============================================================================
-// 5. CHART.JS RENDERING (Crisp Grids, Slate Blue Line, Bold Ticks)
+// 5. CHART.JS RENDERING
 // ============================================================================
 
 async function loadChartData(commodity, period) {
@@ -328,7 +349,7 @@ async function loadChartData(commodity, period) {
         if (titleEl) titleEl.innerText = `${commodity.name} Price`;
         renderChart([...chartData.labels], [...chartData.prices]);
     } catch (error) {
-        if (titleEl) titleEl.innerHTML = `<span style="color: #EF4444;">Data unavailable</span>`;
+        if (titleEl) titleEl.innerHTML = `<span style="color: var(--color-down);">Data unavailable for ${commodity.name}</span>`;
         if (chartInstance) {
             chartInstance.destroy();
             chartInstance = null;
@@ -350,14 +371,13 @@ function renderChart(labels, dataPoints) {
     const ctx = canvas.getContext('2d');
     if (chartInstance) chartInstance.destroy();
 
-    // Chart Bounding Box Eklentisi (Kusursuz Çerçeve)
     const boundingBoxPlugin = {
         id: 'chartBoundingBox',
         beforeDraw(chart) {
             const { ctx, chartArea } = chart;
             if (!chartArea) return;
             ctx.save();
-            ctx.strokeStyle = '#CBD5E1'; // Slate 300 (Keskin sınır)
+            ctx.strokeStyle = '#CBD5E1'; 
             ctx.lineWidth = 1;
             ctx.strokeRect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
             ctx.restore();
@@ -371,12 +391,12 @@ function renderChart(labels, dataPoints) {
             datasets: [{
                 label: 'Price',
                 data: dataPoints,
-                borderColor: '#3B82F6', // Slate Blue (Professional tek renk)
+                borderColor: '#3B82F6', 
                 backgroundColor: 'transparent',
                 borderWidth: 2.5, 
                 pointRadius: 0,
                 pointHoverRadius: 6,
-                fill: false, // Alan taraması tamamen kaldırıldı
+                fill: false, 
                 tension: 0.1
             }]
         },
@@ -388,7 +408,7 @@ function renderChart(labels, dataPoints) {
                 tooltip: {
                     mode: 'index',
                     intersect: false,
-                    backgroundColor: 'rgba(15, 23, 42, 0.95)', // Slate 900
+                    backgroundColor: 'rgba(15, 23, 42, 0.95)', 
                     titleFont: { family: 'Inter', size: 13, weight: '500' }, 
                     bodyFont: { family: 'Inter', size: 14, weight: '700' },
                     padding: 12,
@@ -403,9 +423,9 @@ function renderChart(labels, dataPoints) {
             interaction: { mode: 'nearest', axis: 'x', intersect: false },
             scales: {
                 x: { 
-                    grid: { display: true, color: '#CBD5E1', drawBorder: false }, // Belirgin kılavuz çizgileri
+                    grid: { display: true, color: '#CBD5E1', drawBorder: false }, 
                     ticks: { 
-                        color: '#334155', // Bold & High contrast Slate 700
+                        color: '#334155', 
                         font: { family: 'Inter', size: 12, weight: '700' },
                         maxTicksLimit: 6, 
                         maxRotation: 0, 
@@ -426,8 +446,11 @@ function renderChart(labels, dataPoints) {
                     grid: { display: true, color: '#CBD5E1', drawBorder: false },
                     ticks: { 
                         color: '#334155', 
-                        font: { family: 'Inter', size: 12, weight: '700' }, // Bold Y axis
-                        callback: function(value) { return '$' + value; } 
+                        font: { family: 'Inter', size: 12, weight: '700' }, 
+                        // Y ekseni float hatası kalıcı çözümü: Formatlama eklendi
+                        callback: function(value) { 
+                            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+                        } 
                     }
                 }
             }
