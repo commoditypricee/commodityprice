@@ -3,52 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Commodity Price </title>
+    <title>Commodity Price</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header class="header">
-        <div class="container header-container">
-            <div class="logo-area">
+    
+    <header class="topbar">
+        <div class="logo-area">
+            <div class="logo-icon"></div>
+            <div>
                 <h1>Commodity Price</h1>
-                <p>Real-time global market tracker</p>
+                <p>Global Markets Dashboard</p>
             </div>
-            <div class="clock-area" id="live-clock">--</div>
+        </div>
+        <div class="topbar-right">
+            <div class="clock-area">
+                <span class="live-indicator"></span>
+                <span id="live-clock">--</span>
+            </div>
         </div>
     </header>
 
-    <main class="container main-content">
-        <aside class="sidebar">
-            <section class="table-section">
+    <div class="dashboard-wrapper">
+        
+        <aside class="market-panel panel">
+            <div class="panel-header">
                 <h2>Market Overview</h2>
-                <div class="table-container">
-                    <table id="commodity-table">
-                        <thead>
-                            <tr>
-                                <th>Commodity</th>
-                                <th class="text-right">Price</th>
-                                <th class="text-right">24h Change</th>
-                            </tr>
-                        </thead>
-                        <tbody id="table-body">
-                            </tbody>
-                    </table>
-                </div>
-            </section>
+            </div>
+            <div class="table-scroller">
+                <table id="commodity-table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Symbol</th>
+                            <th class="text-right">Last Price</th>
+                            <th class="text-right">24h Chg</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        </tbody>
+                </table>
+            </div>
         </aside>
 
-        <section class="content-area">
-            <div class="card chart-card">
-                <div class="chart-header">
-                    <h2 id="chart-title">Loading...</h2>
-                    
-                    <div class="timeframe-filters" id="timeframe-buttons">
+        <main class="main-content">
+            
+            <section class="chart-panel panel">
+                <div class="chart-toolbar">
+                    <h2 id="chart-title" class="chart-title">Loading...</h2>
+                    <div class="timeframe-group" id="timeframe-buttons">
                         <button class="filter-btn active" data-period="1D">1D</button>
                         <button class="filter-btn" data-period="1M">1M</button>
                         <button class="filter-btn" data-period="6M">6M</button>
@@ -56,19 +64,20 @@
                         <button class="filter-btn" data-period="5Y">5Y</button>
                     </div>
                 </div>
-                
                 <div class="chart-container">
                     <canvas id="commodityChart"></canvas>
                 </div>
-            </div>
+            </section>
 
-            <div class="card performance-card">
-                <h2 id="perf-title">Price Performance</h2>
-                <div class="perf-table-container">
-                    <table class="perf-table">
+            <section class="performance-panel panel">
+                <div class="panel-header">
+                    <h2 id="perf-title">Price Performance</h2>
+                </div>
+                <div class="table-scroller">
+                    <table class="data-table perf-table">
                         <thead>
                             <tr>
-                                <th>Period</th>
+                                <th>Time Period</th>
                                 <th class="text-right">Change (USD)</th>
                                 <th class="text-right">Change (%)</th>
                             </tr>
@@ -77,9 +86,10 @@
                             </tbody>
                     </table>
                 </div>
-            </div>
-        </section>
-    </main>
+            </section>
+
+        </main>
+    </div>
 
     <script src="script.js"></script>
 </body>
