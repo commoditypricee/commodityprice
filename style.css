@@ -1,195 +1,352 @@
-:root {
-    --bg-color: #f4f7f9;
-    --card-bg: #ffffff;
-    --text-primary: #111827;
-    --text-secondary: #6b7280;
-    --border-color: #e5e7eb;
-    --primary-color: #2563eb;
-    --success-color: #10b981;
-    --danger-color: #ef4444;
-    --hover-bg: #f9fafb;
-    --font-family: 'Inter', sans-serif;
-    --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+/* ==========================================================================
+   PREMIUM DARK THEME VARIABLES
+   ========================================================================== */
+   :root {
+    --bg-base: #0B0E11;        /* Deep app background */
+    --bg-panel: #181A20;       /* Card/Panel background */
+    --bg-hover: #2B3139;       /* Hover states */
+    --border-color: #2B3139;   /* Subtle borders */
+    
+    --text-primary: #EAECEF;   /* Main readable text */
+    --text-muted: #848E9C;     /* Secondary/Labels text */
+    
+    --color-up: #0ECB81;       /* Bullish/Positive Green */
+    --color-down: #F6465D;     /* Bearish/Negative Red */
+    --color-brand: #FCD535;    /* Accent color (Binance Yellow style) */
+    --color-chart: #2962FF;    /* Chart Line Blue */
+
+    --font-main: 'Inter', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+/* ==========================================================================
+   RESET & BASE
+   ========================================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
 body {
-    font-family: var(--font-family);
-    background-color: var(--bg-color);
+    background-color: var(--bg-base);
     color: var(--text-primary);
+    font-family: var(--font-main);
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
+    font-size: 14px;
 }
 
-.container {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 0 24px;
-}
+/* Custom Scrollbar for a sleek look */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: var(--bg-hover); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-/* Header & Live Clock */
-.header {
-    background-color: var(--card-bg);
-    padding: 20px 0;
+/* Utility */
+.text-right { text-align: right !important; }
+
+/* ==========================================================================
+   TOP NAVIGATION
+   ========================================================================== */
+.topbar {
+    background-color: var(--bg-panel);
     border-bottom: 1px solid var(--border-color);
-    margin-bottom: 32px;
-}
-
-.header-container {
+    padding: 12px 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
-.logo-area h1 { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em; }
-.logo-area p { color: var(--text-secondary); font-size: 0.9rem; margin-top: 2px; }
+.logo-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-icon {
+    width: 24px;
+    height: 24px;
+    background-color: var(--color-brand);
+    border-radius: 4px;
+}
+
+.logo-area h1 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.logo-area p {
+    font-size: 12px;
+    color: var(--text-muted);
+}
 
 .clock-area {
-    font-size: 0.95rem;
-    font-weight: 600; 
-    color: #1f2937; 
-    background-color: #f3f4f6; 
-    padding: 10px 20px;
-    border-radius: 9999px; 
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02); 
-    letter-spacing: 0.01em;
-    display: inline-flex;
+    display: flex;
     align-items: center;
-}
-
-/* Layout */
-.main-content {
-    display: grid;
-    grid-template-columns: 390px 1fr; 
-    gap: 24px;
-    align-items: start;
-    margin-bottom: 40px;
-}
-
-/* Cards */
-.sidebar section, .card {
-    background-color: var(--card-bg);
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: var(--card-shadow);
+    gap: 8px;
+    background-color: var(--bg-base);
     border: 1px solid var(--border-color);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text-muted);
 }
 
-.card { margin-bottom: 24px; }
-h2 { font-size: 1.1rem; font-weight: 600; margin-bottom: 20px; color: var(--text-primary); }
-.text-right { text-align: right !important; }
-
-/* Market Overview Table */
-.table-container { width: 100%; }
-
-#commodity-table { 
-    width: 100%; 
-    border-collapse: collapse; 
+.live-indicator {
+    width: 8px;
+    height: 8px;
+    background-color: var(--color-up);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
 }
 
-#commodity-table thead th {
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(14, 203, 129, 0.4); }
+    70% { box-shadow: 0 0 0 6px rgba(14, 203, 129, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(14, 203, 129, 0); }
+}
+
+/* ==========================================================================
+   LAYOUT: GRID SYSTEM
+   ========================================================================== */
+.dashboard-wrapper {
+    max-width: 1600px;
+    margin: 24px auto;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+.panel {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden; /* Contains inner elements cleanly */
+}
+
+.panel-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.panel-header h2 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0; /* Prevents flex blowout on small screens */
+}
+
+/* ==========================================================================
+   DATA TABLES
+   ========================================================================== */
+.table-scroller {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* Ensures perfect alignment */
+}
+
+.data-table th {
+    padding: 12px 20px;
     text-align: left;
-    padding: 12px 10px;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-secondary);
+    font-size: 12px;
     font-weight: 500;
-    font-size: 0.75rem;
-    text-transform: uppercase;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border-color);
 }
 
-#commodity-table tbody td {
-    padding: 16px 10px;
+.data-table td {
+    padding: 12px 20px;
     border-bottom: 1px solid var(--border-color);
-    font-size: 0.9rem;
     vertical-align: middle;
 }
 
-#commodity-table tbody tr:last-child td { border-bottom: none; }
-#commodity-table tbody tr { cursor: pointer; transition: background-color 0.2s ease; }
-#commodity-table tbody tr:hover { background-color: var(--hover-bg); }
-#commodity-table tbody tr.active-row { background-color: #eff6ff; border-left: 4px solid var(--primary-color); }
-
-.commodity-name { font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;}
-.price { font-weight: 500; font-family: 'Inter', monospace; letter-spacing: -0.02em; }
-.change { font-weight: 600; }
-.change.positive { color: var(--success-color); }
-.change.negative { color: var(--danger-color); }
-
-/* GÜNCELLENDİ: Daha belirgin ve şık Performans Tablosu */
-.perf-table-container { 
-    width: 100%; 
-    overflow: hidden; 
-    border-radius: 8px; /* Dış kenarlara yumuşaklık */
-    border: 1px solid var(--border-color); /* Tabloya çerçeve */
+.data-table tbody tr:last-child td {
+    border-bottom: none;
 }
-.perf-table { 
-    width: 100%; 
-    border-collapse: collapse; 
-    margin-top: 0; 
+
+.data-table tbody tr {
+    transition: background-color 0.2s ease;
+    cursor: pointer;
 }
+
+.data-table tbody tr:hover {
+    background-color: var(--bg-hover);
+}
+
+.data-table tbody tr.active-row {
+    background-color: rgba(41, 98, 255, 0.08); /* Subtle blue tint */
+}
+
+/* Typography inside tables */
+.commodity-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.commodity-ticker {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.price {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.change {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.change span {
+    display: block;
+    font-size: 11px;
+    margin-top: 2px;
+}
+
+/* Dynamic Colors */
+.positive { color: var(--color-up) !important; }
+.negative { color: var(--color-down) !important; }
+
+/* Performance Table Specifics */
 .perf-table th {
-    text-align: left;
-    padding: 12px 16px;
-    background-color: #f8fafc; /* Hafif kontrastlı başlık arka planı */
-    border-bottom: 2px solid var(--border-color); /* Kalın alt çizgi */
-    color: #334155; /* Daha koyu başlık metni */
-    font-size: 0.75rem;
-    font-weight: 700; /* Daha kalın başlıklar */
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    background-color: var(--bg-base); /* distinct header */
 }
-.perf-table td {
-    padding: 14px 16px; 
-    border-bottom: 1px solid var(--border-color);
-    font-size: 0.85rem; 
+.perf-table td strong {
+    color: var(--text-primary);
+    font-weight: 500;
 }
-.perf-table tbody tr:last-child td { border-bottom: none; }
-.perf-table tbody tr:hover { background-color: var(--hover-bg); }
-.perf-table strong { font-weight: 600; color: var(--text-primary); }
 
-/* Chart Section */
-.chart-header {
+/* ==========================================================================
+   CHART AREA
+   ========================================================================== */
+.chart-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-toolbar {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 24px;
     flex-wrap: wrap;
     gap: 16px;
 }
 
-.chart-header h2 { margin: 0; font-size: 1.4rem; letter-spacing: -0.02em;}
+.chart-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
 
-.timeframe-filters {
+.timeframe-group {
     display: flex;
-    gap: 4px;
-    background-color: var(--bg-color);
-    padding: 4px;
-    border-radius: 8px;
+    background-color: var(--bg-base);
+    border-radius: 6px;
+    padding: 3px;
     border: 1px solid var(--border-color);
 }
 
 .filter-btn {
     background: transparent;
     border: none;
-    padding: 6px 12px;
-    font-family: var(--font-family);
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--text-secondary);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 4px;
     cursor: pointer;
-    border-radius: 6px;
     transition: all 0.2s ease;
 }
 
-.filter-btn:hover { color: var(--text-primary); }
-.filter-btn.active { background-color: var(--card-bg); color: var(--primary-color); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.filter-btn:hover {
+    color: var(--text-primary);
+}
 
-.chart-container { position: relative; height: 380px; width: 100%; }
+.filter-btn.active {
+    background-color: var(--bg-hover);
+    color: var(--text-primary);
+}
 
-/* Responsive */
-@media (max-width: 992px) {
-    .main-content { grid-template-columns: 1fr; }
-    .header-container { flex-direction: column; gap: 15px; text-align: center; }
+.chart-container {
+    padding: 20px;
+    position: relative;
+    height: 420px;
+    width: 100%;
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN (MOBILE & TABLET)
+   ========================================================================== */
+@media (max-width: 1024px) {
+    .dashboard-wrapper {
+        grid-template-columns: 1fr; /* Switch to single column */
+    }
+    
+    /* Reorder: Chart Top, Market Overview Middle, Performance Bottom */
+    .market-panel {
+        order: 2;
+    }
+    .main-content {
+        order: 1;
+    }
+}
+
+@media (max-width: 600px) {
+    .topbar {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+    
+    .chart-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .timeframe-group {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .filter-btn {
+        padding: 8px 10px;
+        flex: 1;
+    }
+    
+    .chart-container {
+        height: 300px;
+        padding: 10px;
+    }
 }
