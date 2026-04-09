@@ -43,7 +43,6 @@ body {
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: var(--shadow-card); /* Hafif gölge eklendi */
 }
 
 .topbar-inner {
@@ -89,6 +88,7 @@ body {
    ========================================================================== */
 .dashboard {
     display: grid;
+    /* GÜNCELLEME: Sol tablo geniş (400px), Grafik orantılı (1fr) */
     grid-template-columns: 400px 1fr;
     gap: 24px;
     padding-top: 32px;
@@ -149,8 +149,8 @@ body {
 .change-val { font-size: 14px; font-weight: 700; display: flex; flex-direction: column; align-items: flex-end; }
 .change-val span { font-size: 12px; font-weight: 600; margin-top: 2px; }
 
-.positive { color: var(--color-up) !important; }
-.negative { color: var(--color-down) !important; }
+.positive { color: var(--color-up); }
+.negative { color: var(--color-down); }
 
 /* ==========================================================================
    CHART CARD
@@ -194,7 +194,7 @@ body {
 .chart-container { padding: 24px; height: 420px; width: 100%; position: relative; }
 
 /* ==========================================================================
-   COMPACT PERFORMANCE TABLE (Zebra Stripes & Ultra Compact)
+   COMPACT PERFORMANCE TABLE (Retro Finans Estetiği: Zebra Stripes & Compact)
    ========================================================================== */
 .perf-table-wrapper { width: 100%; overflow-x: auto; }
 .perf-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
