@@ -16,7 +16,12 @@
     
     <header class="topbar">
         <div class="logo-area">
-            <div class="logo-icon"></div>
+            <svg class="brand-icon" width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="14" width="10" height="6" rx="1" fill="#F59E0B" stroke="#D97706" stroke-width="1.5"/>
+                <path d="M4 16h6" stroke="#D97706" stroke-width="1.5" stroke-linecap="round"/>
+                <path d="M16 10C16 10 13 14 13 16.5C13 18.433 14.3431 20 16 20C17.6569 20 19 18.433 19 16.5C19 14 16 10 16 10Z" fill="#1E293B" stroke="#0F172A" stroke-width="1.5"/>
+                <path d="M12 4C12 4 8 6 8 9C8 10.5 9 12 12 12C15 12 16 10.5 16 9C16 6 12 4 12 4Z" fill="#10B981" stroke="#059669" stroke-width="1.5"/>
+            </svg>
             <div>
                 <h1>Commodity Price</h1>
                 <p>Global Markets Dashboard</p>
@@ -32,28 +37,30 @@
 
     <div class="dashboard-wrapper">
         
-        <aside class="market-panel panel">
-            <div class="panel-header">
-                <h2>Market Overview</h2>
-            </div>
-            <div class="table-scroller">
-                <table id="commodity-table" class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Symbol</th>
-                            <th class="text-right">Last Price</th>
-                            <th class="text-right">24h Chg</th>
-                        </tr>
-                    </thead>
-                    <tbody id="table-body">
-                        </tbody>
-                </table>
+        <aside class="sidebar">
+            <div class="panel market-panel">
+                <div class="panel-header">
+                    <h2>Market Overview</h2>
+                </div>
+                <div class="table-scroller">
+                    <table id="commodity-table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th class="text-right">Price</th>
+                                <th class="text-right">24h Chg</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-body">
+                            </tbody>
+                    </table>
+                </div>
             </div>
         </aside>
 
         <main class="main-content">
             
-            <section class="chart-panel panel">
+            <section class="panel chart-panel">
                 <div class="chart-toolbar">
                     <h2 id="chart-title" class="chart-title">Loading...</h2>
                     <div class="timeframe-group" id="timeframe-buttons">
@@ -69,7 +76,7 @@
                 </div>
             </section>
 
-            <section class="performance-panel panel">
+            <section class="panel performance-panel">
                 <div class="panel-header">
                     <h2 id="perf-title">Price Performance</h2>
                 </div>
@@ -77,7 +84,7 @@
                     <table class="data-table perf-table">
                         <thead>
                             <tr>
-                                <th>Time Period</th>
+                                <th>Period</th>
                                 <th class="text-right">Change (USD)</th>
                                 <th class="text-right">Change (%)</th>
                             </tr>
