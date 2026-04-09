@@ -1,32 +1,28 @@
 /* ==========================================================================
-   PREMIUM DARK THEME VARIABLES
+   PREMIUM LIGHT THEME VARIABLES
    ========================================================================== */
    :root {
-    --bg-base: #0B0E11;        /* Deep app background */
-    --bg-panel: #181A20;       /* Card/Panel background */
-    --bg-hover: #2B3139;       /* Hover states */
-    --border-color: #2B3139;   /* Subtle borders */
+    --bg-base: #F8FAFC;        /* Light clean background */
+    --bg-panel: #FFFFFF;       /* Crisp white panels */
+    --bg-hover: #F1F5F9;       /* Subtle hover state */
+    --border-color: #E2E8F0;   /* Light gray borders */
     
-    --text-primary: #EAECEF;   /* Main readable text */
-    --text-muted: #848E9C;     /* Secondary/Labels text */
+    --text-primary: #0F172A;   /* Deep slate for high contrast */
+    --text-muted: #64748B;     /* Muted gray for labels */
     
-    --color-up: #0ECB81;       /* Bullish/Positive Green */
-    --color-down: #F6465D;     /* Bearish/Negative Red */
-    --color-brand: #FCD535;    /* Accent color (Binance Yellow style) */
-    --color-chart: #2962FF;    /* Chart Line Blue */
+    --color-up: #059669;       /* Professional Emerald Green */
+    --color-down: #DC2626;     /* Professional Crimson Red */
+    --color-chart: #2563EB;    /* Strong Blue for Chart */
 
     --font-main: 'Inter', system-ui, sans-serif;
-    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
 }
 
 /* ==========================================================================
    RESET & BASE
    ========================================================================== */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
     background-color: var(--bg-base);
@@ -37,13 +33,6 @@ body {
     font-size: 14px;
 }
 
-/* Custom Scrollbar for a sleek look */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--bg-base); }
-::-webkit-scrollbar-thumb { background: var(--bg-hover); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
-
-/* Utility */
 .text-right { text-align: right !important; }
 
 /* ==========================================================================
@@ -52,39 +41,20 @@ body {
 .topbar {
     background-color: var(--bg-panel);
     border-bottom: 1px solid var(--border-color);
-    padding: 12px 24px;
+    padding: 14px 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     position: sticky;
     top: 0;
     z-index: 100;
+    box-shadow: var(--shadow-sm);
 }
 
-.logo-area {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.logo-icon {
-    width: 24px;
-    height: 24px;
-    background-color: var(--color-brand);
-    border-radius: 4px;
-}
-
-.logo-area h1 {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--text-primary);
-    line-height: 1.2;
-}
-
-.logo-area p {
-    font-size: 12px;
-    color: var(--text-muted);
-}
+.logo-area { display: flex; align-items: center; gap: 14px; }
+.brand-icon { flex-shrink: 0; }
+.logo-area h1 { font-size: 19px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.03em; line-height: 1.1; }
+.logo-area p { font-size: 12px; color: var(--text-muted); font-weight: 500; }
 
 .clock-area {
     display: flex;
@@ -92,166 +62,106 @@ body {
     gap: 8px;
     background-color: var(--bg-base);
     border: 1px solid var(--border-color);
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-family: var(--font-mono);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: 600;
     font-size: 13px;
-    color: var(--text-muted);
+    color: var(--text-primary);
 }
 
 .live-indicator {
-    width: 8px;
-    height: 8px;
+    width: 8px; height: 8px;
     background-color: var(--color-up);
     border-radius: 50%;
     animation: pulse 2s infinite;
 }
 
 @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(14, 203, 129, 0.4); }
-    70% { box-shadow: 0 0 0 6px rgba(14, 203, 129, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(14, 203, 129, 0); }
+    0% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.4); }
+    70% { box-shadow: 0 0 0 6px rgba(5, 150, 105, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
 }
 
 /* ==========================================================================
    LAYOUT: GRID SYSTEM
    ========================================================================== */
 .dashboard-wrapper {
-    max-width: 1600px;
+    max-width: 1500px;
     margin: 24px auto;
     padding: 0 24px;
     display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: 20px;
+    /* GÜNCELLEME: Sol menü çok daha dar (300px), grafik devasa (1fr) */
+    grid-template-columns: 300px 1fr;
+    gap: 24px;
     align-items: start;
 }
 
 .panel {
     background-color: var(--bg-panel);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    overflow: hidden; /* Contains inner elements cleanly */
+    border-radius: 12px;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
 }
 
 .panel-header {
-    padding: 16px 20px;
+    padding: 14px 18px;
     border-bottom: 1px solid var(--border-color);
+    background-color: #F8FAFC;
 }
 
-.panel-header h2 {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text-primary);
-}
+.panel-header h2 { font-size: 14px; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.05em; }
 
-.main-content {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    min-width: 0; /* Prevents flex blowout on small screens */
-}
+.main-content { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
 
 /* ==========================================================================
-   DATA TABLES
+   DATA TABLES (COMPACT & BOLD)
    ========================================================================== */
-.table-scroller {
-    width: 100%;
-    overflow-x: auto;
-}
+.table-scroller { width: 100%; overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; }
 
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed; /* Ensures perfect alignment */
-}
-
+/* GÜNCELLEME: Hücre boşlukları (padding) daraltıldı */
 .data-table th {
-    padding: 12px 20px;
+    padding: 10px 12px;
     text-align: left;
-    font-size: 12px;
-    font-weight: 500;
+    font-size: 11px;
+    font-weight: 600;
     color: var(--text-muted);
     border-bottom: 1px solid var(--border-color);
+    text-transform: uppercase;
 }
 
 .data-table td {
-    padding: 12px 20px;
+    padding: 10px 12px;
     border-bottom: 1px solid var(--border-color);
     vertical-align: middle;
 }
 
-.data-table tbody tr:last-child td {
-    border-bottom: none;
-}
+.data-table tbody tr:last-child td { border-bottom: none; }
+.data-table tbody tr { cursor: pointer; transition: background-color 0.2s ease; }
+.data-table tbody tr:hover { background-color: var(--bg-hover); }
+.data-table tbody tr.active-row { background-color: #EFF6FF; border-left: 3px solid var(--color-chart); }
 
-.data-table tbody tr {
-    transition: background-color 0.2s ease;
-    cursor: pointer;
-}
+.commodity-name { font-weight: 700; font-size: 14px; color: var(--text-primary); display: flex; align-items: center; gap: 6px; }
+.commodity-ticker { font-size: 11px; color: var(--text-muted); font-weight: 500; margin-top: 2px; }
 
-.data-table tbody tr:hover {
-    background-color: var(--bg-hover);
-}
+/* GÜNCELLEME: Fiyatlar çok daha kalın ve okunaklı */
+.price { font-size: 14px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em; }
+.change { font-size: 13px; font-weight: 700; }
+.change span { display: block; font-size: 11px; font-weight: 600; margin-top: 1px; }
 
-.data-table tbody tr.active-row {
-    background-color: rgba(41, 98, 255, 0.08); /* Subtle blue tint */
-}
-
-/* Typography inside tables */
-.commodity-name {
-    font-weight: 600;
-    font-size: 14px;
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.commodity-ticker {
-    font-size: 12px;
-    color: var(--text-muted);
-    margin-top: 2px;
-}
-
-.price {
-    font-family: var(--font-mono);
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-primary);
-}
-
-.change {
-    font-family: var(--font-mono);
-    font-size: 13px;
-    font-weight: 500;
-}
-
-.change span {
-    display: block;
-    font-size: 11px;
-    margin-top: 2px;
-}
-
-/* Dynamic Colors */
 .positive { color: var(--color-up) !important; }
 .negative { color: var(--color-down) !important; }
 
-/* Performance Table Specifics */
-.perf-table th {
-    background-color: var(--bg-base); /* distinct header */
-}
-.perf-table td strong {
-    color: var(--text-primary);
-    font-weight: 500;
-}
+/* Performance Table */
+.perf-table th { background-color: transparent; }
+.perf-table td strong { color: var(--text-primary); font-weight: 600; }
+.perf-table td { padding: 12px 16px; font-size: 14px; }
 
 /* ==========================================================================
    CHART AREA
    ========================================================================== */
-.chart-panel {
-    display: flex;
-    flex-direction: column;
-}
+.chart-panel { display: flex; flex-direction: column; }
 
 .chart-toolbar {
     padding: 16px 20px;
@@ -263,17 +173,13 @@ body {
     gap: 16px;
 }
 
-.chart-title {
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--text-primary);
-}
+.chart-title { font-size: 22px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.03em; }
 
 .timeframe-group {
     display: flex;
     background-color: var(--bg-base);
-    border-radius: 6px;
-    padding: 3px;
+    border-radius: 8px;
+    padding: 4px;
     border: 1px solid var(--border-color);
 }
 
@@ -281,72 +187,33 @@ body {
     background: transparent;
     border: none;
     color: var(--text-muted);
-    font-family: var(--font-mono);
     font-size: 12px;
     font-weight: 600;
     padding: 6px 14px;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
-.filter-btn:hover {
-    color: var(--text-primary);
-}
+.filter-btn:hover { color: var(--text-primary); }
+.filter-btn.active { background-color: var(--bg-panel); color: var(--color-chart); box-shadow: var(--shadow-sm); }
 
-.filter-btn.active {
-    background-color: var(--bg-hover);
-    color: var(--text-primary);
-}
-
-.chart-container {
-    padding: 20px;
-    position: relative;
-    height: 420px;
-    width: 100%;
-}
+/* GÜNCELLEME: Grafik alanı daha büyük */
+.chart-container { padding: 20px; position: relative; height: 450px; width: 100%; }
 
 /* ==========================================================================
    RESPONSIVE DESIGN (MOBILE & TABLET)
    ========================================================================== */
 @media (max-width: 1024px) {
-    .dashboard-wrapper {
-        grid-template-columns: 1fr; /* Switch to single column */
-    }
-    
-    /* Reorder: Chart Top, Market Overview Middle, Performance Bottom */
-    .market-panel {
-        order: 2;
-    }
-    .main-content {
-        order: 1;
-    }
+    .dashboard-wrapper { grid-template-columns: 1fr; gap: 20px; padding: 0 16px; margin: 16px auto; }
+    .sidebar { max-width: 100%; } /* Sidebar full width on tablet/mobile */
 }
 
 @media (max-width: 600px) {
-    .topbar {
-        flex-direction: column;
-        gap: 12px;
-        align-items: flex-start;
-    }
-    
-    .chart-toolbar {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    
-    .timeframe-group {
-        width: 100%;
-        justify-content: space-between;
-    }
-    
-    .filter-btn {
-        padding: 8px 10px;
-        flex: 1;
-    }
-    
-    .chart-container {
-        height: 300px;
-        padding: 10px;
-    }
+    .topbar { flex-direction: column; gap: 12px; align-items: flex-start; padding: 12px 16px; }
+    .chart-toolbar { flex-direction: column; align-items: flex-start; }
+    .timeframe-group { width: 100%; justify-content: space-between; }
+    .filter-btn { padding: 8px 10px; flex: 1; }
+    .chart-container { height: 320px; padding: 10px; }
+    .data-table th, .data-table td { padding: 10px 8px; } /* Even tighter on mobile */
 }
