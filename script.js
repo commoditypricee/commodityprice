@@ -1,28 +1,27 @@
 /**
  * COMMODITY PRICE TRACKER - SECURE CLOUDFLARE PROXY ARCHITECTURE
- * Modern Light Theme, Custom Vector Icon, Compact Table & Responsive Design
+ * Senior UI/UX Refactor: Premium Light Theme, Synchronized Dynamic Headers, Crisp Grids
  */
 
 // ============================================================================
-// 1. AYARLAR (PROXY YAPISI KORUNDU)
+// 1. AYARLAR (PROXY YAPISI KESİNLİKLE KORUNDU)
 // ============================================================================
-const WORKER_URL = "https://yahoo-proxy.commodityprice.workers.dev";
+const WORKER_URL = "https://yahoo-proxy.commodityprice.workers.dev"; // Kendi URL'ni ekle
 const PROXY_SECRET = "CommoditySecure2026"; 
 
-// HTML'deki yeni SVG logo temasına uygun sadeleştirilmiş ikonlar
 const commodities = [
-    { id: 'gold', name: 'Gold', icon: '●', ticker: 'GC=F' },
-    { id: 'silver', name: 'Silver', icon: '●', ticker: 'SI=F' },
-    { id: 'copper', name: 'Copper', icon: '●', ticker: 'HG=F' },
-    { id: 'brent', name: 'Brent Oil', icon: '●', ticker: 'BZ=F' },
-    { id: 'natgas', name: 'Natural Gas', icon: '●', ticker: 'NG=F' }
+    { id: 'gold', name: 'Gold', icon: '🥇', ticker: 'GC=F' },
+    { id: 'silver', name: 'Silver', icon: '🥈', ticker: 'SI=F' },
+    { id: 'copper', name: 'Copper', icon: '🥉', ticker: 'HG=F' },
+    { id: 'brent', name: 'Brent Oil', icon: '🛢️', ticker: 'BZ=F' },
+    { id: 'natgas', name: 'Natural Gas', icon: '💨', ticker: 'NG=F' }
 ];
 
 let currentCommodity = commodities[0];
 let currentPeriod = '1D';
 let chartInstance = null;
 const chartCache = {}; 
-let livePricesMap = {}; 
+let livePricesMap = {}; // Fiyat ve Değişim Senkronizasyon Hafızası
 
 const fetchOptions = {
     method: 'GET',
@@ -45,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initApp();
     setupEventListeners();
     
+    // Gerçek veri için 15 dakikalık stabil döngü
     setInterval(() => {
         syncLivePrices();
     }, 15 * 60 * 1000);
@@ -56,7 +56,7 @@ function startLiveClock() {
     
     function updateTime() {
         const now = new Date();
-        const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+        const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         const dateStr = now.toLocaleDateString('en-US', dateOptions);
         const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
         clockEl.innerText = `${dateStr} | ${timeStr}`;
@@ -105,6 +105,7 @@ async function syncLivePrices() {
         const activeLiveData = results.find(item => item.symbol === currentCommodity.ticker);
         if (activeLiveData && activeLiveData.regularMarketPrice) {
             updateLiveChartPoint(activeLiveData.regularMarketPrice);
+            updateChartHeaderStats(activeLiveData); // Dinamik Grafik Başlığı Güncellemesi
         }
         
         updatePerformanceTable(currentCommodity);
@@ -113,7 +114,7 @@ async function syncLivePrices() {
         console.error("❌ Live sync failed:", error.message);
         const tbody = document.getElementById('table-body');
         if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#DC2626; font-weight:bold;">Error loading data.</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#EF4444; font-weight:bold;">Error loading live prices.</td></tr>`;
         }
     }
 }
@@ -180,7 +181,7 @@ async function getHistoricalData(ticker, period) {
 }
 
 // ============================================================================
-// 4. UI & PERFORMANCE TABLE UPDATES
+// 4. UI & PERFORMANCE TABLE UPDATES (DOM Manüpilasyonu)
 // ============================================================================
 
 function updateTableDOM(apiDataArray) {
@@ -205,17 +206,37 @@ function updateTableDOM(apiDataArray) {
 
         tr.innerHTML = `
             <td>
-                <div class="commodity-name">${comm.name}</div>
-                <div class="commodity-ticker">${comm.ticker}</div>
+                <div class="comm-info">
+                    <span class="comm-icon">${comm.icon}</span>
+                    <div class="comm-text">
+                        <h3>${comm.name}</h3>
+                        <span>${comm.ticker}</span>
+                    </div>
+                </div>
             </td>
-            <td class="price text-right">$${currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-            <td class="change text-right ${isPositive ? 'positive' : 'negative'}">
+            <td class="price-val text-right">$${currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+            <td class="change-val text-right ${isPositive ? 'positive' : 'negative'}">
                 ${isPositive ? '+' : ''}${changeValue.toFixed(2)}
                 <span>${isPositive ? '+' : ''}${changePercent.toFixed(2)}%</span>
             </td>
         `;
         tbody.appendChild(tr);
     });
+}
+
+// GÜNCELLEME: Grafik Başlığına Dinamik Fiyat ve Yüzde Ekleme
+function updateChartHeaderStats(liveData) {
+    const statsContainer = document.getElementById('chart-current-stats');
+    if (!statsContainer || !liveData) return;
+
+    const isPositive = liveData.regularMarketChange >= 0;
+    const colorClass = isPositive ? 'positive' : 'negative';
+    const sign = isPositive ? '+' : '';
+
+    statsContainer.innerHTML = `
+        <span class="stat-price">$${liveData.regularMarketPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+        <span class="stat-change ${colorClass}">${sign}${liveData.regularMarketChangePercent.toFixed(2)}%</span>
+    `;
 }
 
 async function updatePerformanceTable(commodity) {
@@ -227,7 +248,7 @@ async function updatePerformanceTable(commodity) {
     const tbody = document.getElementById('perf-table-body');
     if (!tbody) return;
     
-    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: var(--text-muted); padding: 20px;">Analyzing data...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: #64748B; padding: 20px;">Analyzing data...</td></tr>';
 
     try {
         const liveData = livePricesMap[commodity.ticker];
@@ -244,6 +265,7 @@ async function updatePerformanceTable(commodity) {
             const displayName = displayNames[index];
             const tr = document.createElement('tr');
             
+            // "Today" Satırı: 24h Change ile tıpatıp eşleniyor.
             if (period === '1D') {
                 const change = liveData.change;
                 const changePct = liveData.changePercent;
@@ -253,12 +275,12 @@ async function updatePerformanceTable(commodity) {
 
                 tr.innerHTML = `
                     <td><strong>${displayName}</strong></td>
-                    <td class="price text-right ${colorClass}">${sign}$${Math.abs(change).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                    <td class="change text-right ${colorClass}">${sign}${Math.abs(changePct).toFixed(2)}%</td>
+                    <td class="text-right ${colorClass}">${sign}$${Math.abs(change).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td class="text-right ${colorClass}">${sign}${Math.abs(changePct).toFixed(2)}%</td>
                 `;
             } else {
                 if (!data || data.prices.length === 0) {
-                    tr.innerHTML = `<td><strong>${displayName}</strong></td><td colspan="2" class="text-right" style="color:var(--text-muted)">Data unavailable</td>`;
+                    tr.innerHTML = `<td><strong>${displayName}</strong></td><td colspan="2" class="text-right" style="color:#64748B">Data unavailable</td>`;
                 } else {
                     const oldPrice = data.prices[0];
                     const change = liveData.price - oldPrice;
@@ -270,15 +292,15 @@ async function updatePerformanceTable(commodity) {
 
                     tr.innerHTML = `
                         <td><strong>${displayName}</strong></td>
-                        <td class="price text-right ${colorClass}">${sign}$${Math.abs(change).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                        <td class="change text-right ${colorClass}">${sign}${Math.abs(changePct).toFixed(2)}%</td>
+                        <td class="text-right ${colorClass}">${sign}$${Math.abs(change).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                        <td class="text-right ${colorClass}">${sign}${Math.abs(changePct).toFixed(2)}%</td>
                     `;
                 }
             }
             tbody.appendChild(tr);
         });
     } catch (error) {
-        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--color-down);">Failed to load metrics</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#EF4444;">Failed to load performance metrics</td></tr>`;
     }
 }
 
@@ -294,7 +316,7 @@ async function selectCommodity(commodity) {
 }
 
 // ============================================================================
-// 5. CHART.JS RENDERING (Light Theme Configured)
+// 5. CHART.JS RENDERING (Crisp Grids, Slate Blue Line, Bold Ticks)
 // ============================================================================
 
 async function loadChartData(commodity, period) {
@@ -306,7 +328,7 @@ async function loadChartData(commodity, period) {
         if (titleEl) titleEl.innerText = `${commodity.name} Price`;
         renderChart([...chartData.labels], [...chartData.prices]);
     } catch (error) {
-        if (titleEl) titleEl.innerHTML = `<span style="color: var(--color-down);">Data unavailable for ${commodity.name}</span>`;
+        if (titleEl) titleEl.innerHTML = `<span style="color: #EF4444;">Data unavailable</span>`;
         if (chartInstance) {
             chartInstance.destroy();
             chartInstance = null;
@@ -328,14 +350,14 @@ function renderChart(labels, dataPoints) {
     const ctx = canvas.getContext('2d');
     if (chartInstance) chartInstance.destroy();
 
-    // Bounding Box (Kutuyu Kapatma) Eklentisi - Light Theme Border Rengi
+    // Chart Bounding Box Eklentisi (Kusursuz Çerçeve)
     const boundingBoxPlugin = {
         id: 'chartBoundingBox',
         beforeDraw(chart) {
             const { ctx, chartArea } = chart;
             if (!chartArea) return;
             ctx.save();
-            ctx.strokeStyle = '#E2E8F0'; // Light gray border
+            ctx.strokeStyle = '#CBD5E1'; // Slate 300 (Keskin sınır)
             ctx.lineWidth = 1;
             ctx.strokeRect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
             ctx.restore();
@@ -349,12 +371,12 @@ function renderChart(labels, dataPoints) {
             datasets: [{
                 label: 'Price',
                 data: dataPoints,
-                borderColor: '#2563EB', // Strong Blue (Tek renk isteği)
+                borderColor: '#3B82F6', // Slate Blue (Professional tek renk)
                 backgroundColor: 'transparent',
                 borderWidth: 2.5, 
                 pointRadius: 0,
-                pointHoverRadius: 5,
-                fill: false, // Alan taraması iptali korundu
+                pointHoverRadius: 6,
+                fill: false, // Alan taraması tamamen kaldırıldı
                 tension: 0.1
             }]
         },
@@ -366,13 +388,11 @@ function renderChart(labels, dataPoints) {
                 tooltip: {
                     mode: 'index',
                     intersect: false,
-                    backgroundColor: '#0F172A', 
-                    titleColor: '#F8FAFC',
-                    bodyColor: '#F8FAFC',
-                    titleFont: { family: 'Inter', size: 12, weight: '500' }, 
-                    bodyFont: { family: 'Inter', size: 14, weight: 'bold' },
-                    padding: 10,
-                    displayColors: false, // Simge iptali korundu
+                    backgroundColor: 'rgba(15, 23, 42, 0.95)', // Slate 900
+                    titleFont: { family: 'Inter', size: 13, weight: '500' }, 
+                    bodyFont: { family: 'Inter', size: 14, weight: '700' },
+                    padding: 12,
+                    displayColors: false, 
                     callbacks: {
                         label: function(context) {
                             return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed.y);
@@ -383,11 +403,11 @@ function renderChart(labels, dataPoints) {
             interaction: { mode: 'nearest', axis: 'x', intersect: false },
             scales: {
                 x: { 
-                    grid: { display: true, color: '#E2E8F0', drawBorder: false }, // Light grid
+                    grid: { display: true, color: '#CBD5E1', drawBorder: false }, // Belirgin kılavuz çizgileri
                     ticks: { 
-                        color: '#64748B', // Muted label color
-                        font: { family: 'Inter', size: 11, weight: '500' },
-                        maxTicksLimit: 6, // Eksen sadeleştirme korundu
+                        color: '#334155', // Bold & High contrast Slate 700
+                        font: { family: 'Inter', size: 12, weight: '700' },
+                        maxTicksLimit: 6, 
                         maxRotation: 0, 
                         autoSkip: true,
                         callback: function(val, index) {
@@ -403,10 +423,10 @@ function renderChart(labels, dataPoints) {
                     }
                 },
                 y: {
-                    grid: { display: true, color: '#E2E8F0', drawBorder: false },
+                    grid: { display: true, color: '#CBD5E1', drawBorder: false },
                     ticks: { 
-                        color: '#0F172A', // Dark text for readability
-                        font: { family: 'Inter', size: 12, weight: '600' }, 
+                        color: '#334155', 
+                        font: { family: 'Inter', size: 12, weight: '700' }, // Bold Y axis
                         callback: function(value) { return '$' + value; } 
                     }
                 }
