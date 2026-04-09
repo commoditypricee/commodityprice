@@ -1,72 +1,74 @@
 /* ==========================================================================
-   PREMIUM LIGHT THEME VARIABLES
+   PREMIUM LIGHT THEME & SAAS VARIABLES
    ========================================================================== */
    :root {
-    --bg-base: #F8FAFC;        /* Light clean background */
-    --bg-panel: #FFFFFF;       /* Crisp white panels */
-    --bg-hover: #F1F5F9;       /* Subtle hover state */
-    --border-color: #E2E8F0;   /* Light gray borders */
+    --bg-body: #F3F4F6;        /* Slate 100 - Clean app background */
+    --bg-surface: #FFFFFF;     /* White cards */
+    --bg-hover: #F8FAFC;       /* Slate 50 */
+    --border-subtle: #E2E8F0;  /* Slate 200 */
+    --border-strong: #CBD5E1;  /* Slate 300 */
     
-    --text-primary: #0F172A;   /* Deep slate for high contrast */
-    --text-muted: #64748B;     /* Muted gray for labels */
+    --text-main: #0F172A;      /* Slate 900 - High contrast */
+    --text-muted: #64748B;     /* Slate 500 */
     
-    --color-up: #059669;       /* Professional Emerald Green */
-    --color-down: #DC2626;     /* Professional Crimson Red */
-    --color-chart: #2563EB;    /* Strong Blue for Chart */
+    --color-up: #10B981;       /* Emerald 500 */
+    --color-up-bg: #D1FAE5;    /* Emerald 100 */
+    --color-down: #EF4444;     /* Red 500 */
+    --color-down-bg: #FEE2E2;  /* Red 100 */
+    --color-chart: #3B82F6;    /* Blue 500 - Professional Slate Blue */
 
-    --font-main: 'Inter', system-ui, sans-serif;
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
-    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+    --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
-/* ==========================================================================
-   RESET & BASE
-   ========================================================================== */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-    background-color: var(--bg-base);
-    color: var(--text-primary);
-    font-family: var(--font-main);
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    font-family: var(--font-family);
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
-    font-size: 14px;
 }
 
+.container { max-width: 1440px; margin: 0 auto; padding: 0 24px; }
 .text-right { text-align: right !important; }
 
 /* ==========================================================================
-   TOP NAVIGATION
+   TOPBAR
    ========================================================================== */
 .topbar {
-    background-color: var(--bg-panel);
-    border-bottom: 1px solid var(--border-color);
-    padding: 14px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    background-color: var(--bg-surface);
+    border-bottom: 1px solid var(--border-subtle);
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: var(--shadow-sm);
 }
 
-.logo-area { display: flex; align-items: center; gap: 14px; }
-.brand-icon { flex-shrink: 0; }
-.logo-area h1 { font-size: 19px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.03em; line-height: 1.1; }
-.logo-area p { font-size: 12px; color: var(--text-muted); font-weight: 500; }
+.topbar-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 70px;
+}
+
+.brand { display: flex; align-items: center; gap: 16px; }
+.brand-icon { width: 36px; height: 36px; }
+.brand-text h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.03em; color: var(--text-main); line-height: 1.1; }
+.brand-text p { font-size: 13px; font-weight: 500; color: var(--text-muted); }
 
 .clock-area {
     display: flex;
     align-items: center;
     gap: 8px;
-    background-color: var(--bg-base);
-    border: 1px solid var(--border-color);
-    padding: 6px 14px;
-    border-radius: 20px;
+    background-color: var(--bg-body);
+    border: 1px solid var(--border-subtle);
+    padding: 6px 16px;
+    border-radius: 999px;
     font-weight: 600;
-    font-size: 13px;
-    color: var(--text-primary);
+    font-size: 14px;
+    color: var(--text-main);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
 }
 
 .live-indicator {
@@ -75,97 +77,87 @@ body {
     border-radius: 50%;
     animation: pulse 2s infinite;
 }
-
 @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.4); }
-    70% { box-shadow: 0 0 0 6px rgba(5, 150, 105, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+    70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
 }
 
 /* ==========================================================================
-   LAYOUT: GRID SYSTEM
+   DASHBOARD LAYOUT (GRID)
    ========================================================================== */
-.dashboard-wrapper {
-    max-width: 1500px;
-    margin: 24px auto;
-    padding: 0 24px;
+.dashboard {
     display: grid;
-    /* GÜNCELLEME: Sol menü çok daha dar (300px), grafik devasa (1fr) */
-    grid-template-columns: 300px 1fr;
+    /* GÜNCELLEME: Sol tablo geniş (400px), Grafik orantılı (1fr) */
+    grid-template-columns: 400px 1fr;
     gap: 24px;
+    padding-top: 32px;
+    padding-bottom: 40px;
     align-items: start;
 }
 
-.panel {
-    background-color: var(--bg-panel);
-    border: 1px solid var(--border-color);
+.market-panel, .chart-card, .performance-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
     border-radius: 12px;
-    box-shadow: var(--shadow-md);
+    box-shadow: var(--shadow-card);
     overflow: hidden;
 }
 
+.main-panel { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+
 .panel-header {
-    padding: 14px 18px;
-    border-bottom: 1px solid var(--border-color);
-    background-color: #F8FAFC;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-subtle);
+    background-color: #FAFAFA;
 }
-
-.panel-header h2 { font-size: 14px; font-weight: 700; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.05em; }
-
-.main-content { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+.panel-header h2 { font-size: 16px; font-weight: 700; color: var(--text-main); letter-spacing: -0.01em; }
 
 /* ==========================================================================
-   DATA TABLES (COMPACT & BOLD)
+   MARKET OVERVIEW TABLE (Spacious but Compact)
    ========================================================================== */
 .table-scroller { width: 100%; overflow-x: auto; }
-.data-table { width: 100%; border-collapse: collapse; }
+.overview-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 
-/* GÜNCELLEME: Hücre boşlukları (padding) daraltıldı */
-.data-table th {
-    padding: 10px 12px;
+.overview-table th {
+    padding: 12px 24px;
     text-align: left;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--text-muted);
-    border-bottom: 1px solid var(--border-color);
     text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border-subtle);
 }
 
-.data-table td {
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--border-color);
+.overview-table td {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-subtle);
     vertical-align: middle;
 }
+.overview-table tbody tr:last-child td { border-bottom: none; }
+.overview-table tbody tr { cursor: pointer; transition: background-color 0.2s; }
+.overview-table tbody tr:hover { background-color: var(--bg-hover); }
+.overview-table tbody tr.active-row { background-color: #F0F9FF; border-left: 4px solid var(--color-chart); }
 
-.data-table tbody tr:last-child td { border-bottom: none; }
-.data-table tbody tr { cursor: pointer; transition: background-color 0.2s ease; }
-.data-table tbody tr:hover { background-color: var(--bg-hover); }
-.data-table tbody tr.active-row { background-color: #EFF6FF; border-left: 3px solid var(--color-chart); }
+.comm-info { display: flex; align-items: center; gap: 12px; }
+.comm-icon { font-size: 20px; }
+.comm-text h3 { font-size: 15px; font-weight: 700; color: var(--text-main); }
+.comm-text span { font-size: 12px; font-weight: 600; color: var(--text-muted); }
 
-.commodity-name { font-weight: 700; font-size: 14px; color: var(--text-primary); display: flex; align-items: center; gap: 6px; }
-.commodity-ticker { font-size: 11px; color: var(--text-muted); font-weight: 500; margin-top: 2px; }
+.price-val { font-size: 16px; font-weight: 700; color: var(--text-main); }
+.change-val { font-size: 14px; font-weight: 700; display: flex; flex-direction: column; align-items: flex-end; }
+.change-val span { font-size: 12px; font-weight: 600; margin-top: 2px; }
 
-/* GÜNCELLEME: Fiyatlar çok daha kalın ve okunaklı */
-.price { font-size: 14px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.02em; }
-.change { font-size: 13px; font-weight: 700; }
-.change span { display: block; font-size: 11px; font-weight: 600; margin-top: 1px; }
-
-.positive { color: var(--color-up) !important; }
-.negative { color: var(--color-down) !important; }
-
-/* Performance Table */
-.perf-table th { background-color: transparent; }
-.perf-table td strong { color: var(--text-primary); font-weight: 600; }
-.perf-table td { padding: 12px 16px; font-size: 14px; }
+.positive { color: var(--color-up); }
+.negative { color: var(--color-down); }
 
 /* ==========================================================================
-   CHART AREA
+   CHART CARD
    ========================================================================== */
-.chart-panel { display: flex; flex-direction: column; }
-
-.chart-toolbar {
-    padding: 16px 20px;
-    border-bottom: 1px solid var(--border-color);
+.chart-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-subtle);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -173,47 +165,72 @@ body {
     gap: 16px;
 }
 
-.chart-title { font-size: 22px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.03em; }
+.chart-title-group { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+.chart-title-group h2 { font-size: 24px; font-weight: 800; color: var(--text-main); letter-spacing: -0.03em; }
 
-.timeframe-group {
+.chart-stats {
     display: flex;
-    background-color: var(--bg-base);
-    border-radius: 8px;
-    padding: 4px;
-    border: 1px solid var(--border-color);
+    align-items: baseline;
+    gap: 10px;
+    font-variant-numeric: tabular-nums;
 }
+.stat-price { font-size: 22px; font-weight: 700; color: var(--text-main); }
+.stat-change { 
+    font-size: 14px; font-weight: 700; padding: 4px 10px; border-radius: 6px; 
+}
+.stat-change.positive { background-color: var(--color-up-bg); color: var(--color-up); }
+.stat-change.negative { background-color: var(--color-down-bg); color: var(--color-down); }
 
+.timeframe-filters {
+    display: flex; background-color: var(--bg-body); padding: 4px; border-radius: 8px; border: 1px solid var(--border-subtle);
+}
 .filter-btn {
-    background: transparent;
-    border: none;
-    color: var(--text-muted);
-    font-size: 12px;
-    font-weight: 600;
-    padding: 6px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s ease;
+    background: transparent; border: none; color: var(--text-muted); font-size: 13px; font-weight: 600;
+    padding: 6px 14px; border-radius: 6px; cursor: pointer; transition: all 0.2s;
 }
+.filter-btn:hover { color: var(--text-main); }
+.filter-btn.active { background-color: var(--bg-surface); color: var(--color-chart); box-shadow: var(--shadow-card); }
 
-.filter-btn:hover { color: var(--text-primary); }
-.filter-btn.active { background-color: var(--bg-panel); color: var(--color-chart); box-shadow: var(--shadow-sm); }
+.chart-container { padding: 24px; height: 420px; width: 100%; position: relative; }
 
-/* GÜNCELLEME: Grafik alanı daha büyük */
-.chart-container { padding: 20px; position: relative; height: 450px; width: 100%; }
+/* ==========================================================================
+   COMPACT PERFORMANCE TABLE (Massively Compact)
+   ========================================================================== */
+.perf-table-wrapper { width: 100%; overflow-x: auto; }
+.perf-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+
+/* GÜNCELLEME: Hücreler çok daha dar ve minimalist yapıldı */
+.perf-table th {
+    padding: 8px 24px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    border-bottom: 2px solid var(--border-subtle);
+    background-color: #FAFAFA;
+}
+.perf-table td {
+    padding: 8px 24px; /* Dramatik şekilde küçültüldü */
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 13px;
+    font-weight: 600;
+}
+.perf-table tbody tr:last-child td { border-bottom: none; }
+.perf-table td strong { color: var(--text-main); font-weight: 700; }
 
 /* ==========================================================================
    RESPONSIVE DESIGN (MOBILE & TABLET)
    ========================================================================== */
 @media (max-width: 1024px) {
-    .dashboard-wrapper { grid-template-columns: 1fr; gap: 20px; padding: 0 16px; margin: 16px auto; }
-    .sidebar { max-width: 100%; } /* Sidebar full width on tablet/mobile */
+    .dashboard { grid-template-columns: 1fr; padding-top: 24px; }
+    .chart-container { height: 350px; }
 }
 
-@media (max-width: 600px) {
-    .topbar { flex-direction: column; gap: 12px; align-items: flex-start; padding: 12px 16px; }
-    .chart-toolbar { flex-direction: column; align-items: flex-start; }
-    .timeframe-group { width: 100%; justify-content: space-between; }
+@media (max-width: 640px) {
+    .topbar-inner { flex-direction: column; height: auto; gap: 16px; padding: 16px 0; }
+    .chart-header { flex-direction: column; align-items: flex-start; }
+    .timeframe-filters { width: 100%; justify-content: space-between; }
     .filter-btn { padding: 8px 10px; flex: 1; }
-    .chart-container { height: 320px; padding: 10px; }
-    .data-table th, .data-table td { padding: 10px 8px; } /* Even tighter on mobile */
+    .overview-table td, .overview-table th { padding: 12px 16px; }
+    .perf-table td, .perf-table th { padding: 8px 16px; }
 }
