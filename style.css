@@ -78,11 +78,12 @@ body {
 
 .header-meta { display: flex; flex-direction: column; align-items: flex-end; }
 .clock-area {
-    display: flex; align-items: center; gap: 8px;
+    display: flex; align-items: center; gap: 10px;
     font-family: var(--font-mono); 
-    font-size: 13px; 
-    font-weight: 600;
+    font-size: 15px; /* Artırıldı */
+    font-weight: 700; /* Daha tok */
     color: var(--ink-black);
+    padding: 4px 8px; /* Dengeli iç boşluk */
 }
 
 /* Dynamic Market Status Dot */
