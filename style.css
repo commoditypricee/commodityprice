@@ -1,5 +1,5 @@
 /* ==========================================================================
-   THE COMMODITY JOURNAL - NİHAİ EDİTORYAL TASARIM
+   THE COMMODITY JOURNAL - NİHAİ EDİTORYAL TASARIM & UX POLISH
    ========================================================================== */
 :root {
     /* Backgrounds: Eye-resting pearl/cream */
@@ -41,13 +41,18 @@ body {
 .container { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
 
 /* ==========================================================================
-   MASTHEAD (HEADER)
+   MASTHEAD (STICKY GLASSMORPHISM HEADER)
    ========================================================================== */
 .journal-masthead {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background-color: rgba(255, 255, 255, 0.85); /* Slightly transparent */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-bottom: 2px solid var(--ink-black);
     padding: 30px 0 20px 0;
     margin-bottom: 30px;
-    background-color: var(--bg-panel);
 }
 
 .masthead-inner {
@@ -165,7 +170,7 @@ body {
     border-bottom: 1px solid var(--hairline);
     flex-wrap: wrap; gap: 20px;
 }
-.chart-header h2 { font-family: var(--font-serif); font-size: 26px; font-weight: 800; line-height: 1; }
+.chart-header h2 { font-family: var(--font-serif); font-size: 26px; font-weight: 800; line-height: 1; margin: 0; }
 
 .timeframe-tabs { display: flex; gap: 20px; }
 .tab-btn {
@@ -220,7 +225,32 @@ body {
 }
 .perf-val { font-family: var(--font-mono); font-size: 18px; font-weight: 700; color: var(--ink-black); }
 .perf-pct { font-family: var(--font-mono); font-size: 13px; font-weight: 600; }
+.perf-unavailable {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-light);
+}
 
+/* ==========================================================================
+   MODERN SKELETON LOADING (SHIMMER ANIMATION)
+   ========================================================================== */
+.skeleton {
+    background: #E5E7EB;
+    background: linear-gradient(110deg, #E5E7EB 8%, #F3F4F6 18%, #E5E7EB 33%);
+    background-size: 200% 100%;
+    animation: 1.5s shimmer linear infinite;
+    color: transparent !important;
+}
+
+@keyframes shimmer {
+    to { background-position-x: -200%; }
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
 @media (max-width: 1024px) {
     .journal-layout { grid-template-columns: 1fr; }
     .brand-title { font-size: 30px; }
