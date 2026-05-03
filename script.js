@@ -1,6 +1,6 @@
 /**
  * THE COMMODITY JOURNAL - NİHAİ KONTROL SCRİPTİ
- * Dinamik Başlıklar, HH:MM:SS Saat, Piyasa Durum Noktası ve 1D Haftasonu Filtreleme
+ * Dinamik Başlıklar, HH:MM:SS Saat, Piyasa Durumu, 1D Haftasonu Filtreleme, Skeleton & Gradient Chart.
  */
 
 // ============================================================================
@@ -178,7 +178,20 @@ async function updatePerformanceTable(commodity) {
     const container = document.getElementById('perf-cards-container');
     const periods = ['1D', '1W', '1M', '3M', '6M', '1Y', '5Y'];
     const names = ['Today', '1 Week', '1 Month', '3 Months', '6 Months', '1 Year', '5 Years'];
-    container.innerHTML = '<div style="grid-column: 1/-1; text-align:center;">Analyzing...</div>';
+    
+    // Inject Skeleton Loading for Performance Cards
+    container.innerHTML = '';
+    periods.forEach((_, i) => {
+        const block = document.createElement('div');
+        block.className = 'perf-block';
+        block.innerHTML = `
+            <div class="perf-label">${names[i]}</div>
+            <div class="skeleton" style="width: 70%; height: 24px; margin-top: 4px; border-radius: 4px;"></div>
+            <div class="skeleton" style="width: 45%; height: 18px; margin-top: 4px; border-radius: 4px;"></div>
+        `;
+        container.appendChild(block);
+    });
+
     try {
         const live = livePricesMap[commodity.ticker];
         const hists = await Promise.all(periods.map(p => getHistoricalData(commodity.ticker, p).catch(() => null)));
@@ -204,20 +217,24 @@ async function updatePerformanceTable(commodity) {
             `;
             container.appendChild(block);
         });
-    } catch (e) { container.innerHTML = 'Data failure.'; }
+    } catch (e) { container.innerHTML = '<div style="grid-column: 1/-1; color: var(--terra-red);">Data failure.</div>'; }
 }
 
 async function loadChartData(commodity, period) {
     const title = document.getElementById('chart-title');
     const container = document.getElementById('chart-container');
     container.querySelectorAll('.chart-error-overlay').forEach(e => e.remove());
-    title.innerText = `Loading ${commodity.name}...`;
+    
+    // Inject Skeleton Loading for Chart Title
+    title.innerHTML = `<div class="skeleton" style="width: 200px; height: 32px; border-radius: 4px; display: inline-block;"></div>`;
+    
     try {
         const data = await getHistoricalData(commodity.ticker, period);
         title.innerText = `${commodity.name} Price`;
         renderChart(data.labels, data.prices);
     } catch (e) {
         if (chartInstance) chartInstance.destroy();
+        title.innerText = `${commodity.name} Price`;
         const overlay = document.createElement('div');
         overlay.className = 'chart-error-overlay';
         overlay.innerHTML = `<div class="overlay-box"><h3>Market Closed</h3><p>Data unavailable for this period.</p></div>`;
@@ -226,28 +243,47 @@ async function loadChartData(commodity, period) {
 }
 
 function renderChart(labels, prices) {
-    const ctx = document.getElementById('commodityChart').getContext('2d');
+    const canvas = document.getElementById('commodityChart');
+    const ctx = canvas.getContext('2d');
     if (chartInstance) chartInstance.destroy();
+
+    // Subtle Gradient Fill (Dark fading to transparent)
+    let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(15, 23, 42, 0.12)'); // Deep ink black color with low opacity
+    gradient.addColorStop(1, 'rgba(15, 23, 42, 0)');
+
     chartInstance = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
             datasets: [{
-                data: prices, borderColor: '#0F172A', borderWidth: 2, pointRadius: 0, tension: 0.1, fill: false
+                data: prices, 
+                borderColor: '#0F172A', 
+                borderWidth: 2, 
+                pointRadius: 0, 
+                tension: 0.1, 
+                fill: true,
+                backgroundColor: gradient
             }]
         },
         options: {
             responsive: true, maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: {
-                x: { grid: { display: false }, ticks: { font: { weight: 600 }, color: '#0F172A', maxTicksLimit: 7 } },
-                y: { ticks: { font: { weight: 600 }, color: '#0F172A', callback: v => '$' + v.toLocaleString() } }
+                x: { 
+                    grid: { display: false }, 
+                    ticks: { font: { weight: 700, size: 13 }, color: '#0F172A', maxTicksLimit: 7 } 
+                },
+                y: { 
+                    ticks: { font: { weight: 700, size: 13 }, color: '#0F172A', callback: v => '$' + v.toLocaleString() } 
+                }
             }
         }
     });
 }
 
 function selectCommodity(c) {
+    if (currentCommodity.id === c.id) return;
     currentCommodity = c;
     updateTableDOM();
     loadChartData(c, currentPeriod);
