@@ -1,27 +1,26 @@
 /* ==========================================================================
-   PREMIUM FINTECH / SAAS THEME
+   PREMIUM FINTECH UI / SAAS VARIABLES
    ========================================================================== */
 :root {
-    --bg-body: #F4F7F9;        /* Soft, airy background */
-    --bg-surface: #FFFFFF;     /* White cards */
-    --bg-hover: #F8FAFC;       /* Hover state */
+    --bg-body: #F4F7F9;        
+    --bg-surface: #FFFFFF;     
+    --bg-hover: #F8FAFC;       
     
     --border-subtle: rgba(226, 232, 240, 0.6); 
     
-    --text-main: #0F172A;      /* Deep Slate for high contrast */
-    --text-muted: #64748B;     /* Subtitle gray */
+    --text-main: #0F172A;      
+    --text-muted: #64748B;     
     
-    --color-up: #10B981;       /* Modern Emerald 500 */
-    --color-up-bg: rgba(16, 185, 129, 0.12); /* 12% Opacity for badge */
-    --color-down: #F43F5E;     /* Modern Rose 500 */
+    --color-up: #10B981;       /* Emerald-500 */
+    --color-up-bg: rgba(16, 185, 129, 0.12); 
+    --color-down: #F43F5E;     /* Rose-500 */
     --color-down-bg: rgba(244, 63, 94, 0.12);
     --color-chart: #3B82F6;    
 
     --font-family: 'Inter', system-ui, -apple-system, sans-serif;
     
-    /* Modern Soft Shadows & Radii */
+    /* Soft Shadow & Radius System */
     --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.025);
-    --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
     --radius-card: 20px;
     --radius-item: 16px;
 }
@@ -52,7 +51,7 @@ body {
 .topbar-inner { display: flex; justify-content: space-between; align-items: center; height: 74px; }
 .brand { display: flex; align-items: center; gap: 16px; }
 .brand-icon { width: 36px; height: 36px; }
-.brand-text h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.03em; color: var(--text-main); line-height: 1.1; }
+.brand-text h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.03em; color: var(--text-main); }
 .brand-text p { font-size: 13px; font-weight: 500; color: var(--text-muted); }
 
 .clock-area {
@@ -60,8 +59,9 @@ body {
     background-color: var(--bg-body);
     padding: 8px 18px;
     border-radius: 999px;
-    font-weight: 600; font-size: 14px; color: var(--text-main);
+    font-weight: 600; font-size: 14px;
 }
+
 .live-indicator {
     width: 8px; height: 8px; background-color: var(--color-up); border-radius: 50%;
     animation: pulse 2s infinite;
@@ -77,7 +77,7 @@ body {
    ========================================================================== */
 .dashboard {
     display: grid; grid-template-columns: 380px 1fr; gap: 32px;
-    padding-top: 32px; padding-bottom: 40px; align-items: flex-start; 
+    padding-top: 32px; padding-bottom: 40px;
 }
 
 .market-panel, .chart-card, .performance-card {
@@ -85,121 +85,99 @@ body {
     border-radius: var(--radius-card);
     box-shadow: var(--shadow-card);
     overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.8); /* Refined glass/premium edge */
+    border: 1px solid rgba(255,255,255,0.8);
 }
 
 .main-panel { display: flex; flex-direction: column; gap: 32px; min-width: 0; }
 
 .panel-header { padding: 20px 24px; border-bottom: 1px solid var(--border-subtle); }
-.panel-header h2 { font-size: 17px; font-weight: 700; color: var(--text-main); letter-spacing: -0.01em; margin: 0; }
+.panel-header h2 { font-size: 17px; font-weight: 700; color: var(--text-main); }
 
 /* ==========================================================================
-   MARKET OVERVIEW LIST (Modern Hover Cards)
+   MARKET LIST (OVERVIEW LIST)
    ========================================================================== */
-.overview-list { display: flex; flex-direction: column; padding: 12px; gap: 6px; }
+.overview-list { display: flex; flex-direction: column; padding: 12px; gap: 8px; }
 
 .overview-item {
     display: flex; justify-content: space-between; align-items: center;
     padding: 16px; border-radius: var(--radius-item);
-    cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    background: transparent; border: 1px solid transparent;
+    cursor: pointer; transition: all 0.25s ease;
+    border: 1px solid transparent;
 }
 .overview-item:hover { background: var(--bg-hover); transform: scale(1.01); }
 .overview-item.active {
     background: #F8FAFC;
     border-color: rgba(59, 130, 246, 0.15);
     box-shadow: 0 4px 15px -3px rgba(59, 130, 246, 0.08);
-    transform: scale(1.02);
 }
 
 .comm-left { display: flex; align-items: center; gap: 14px; }
 .comm-icon { font-size: 24px; }
-.comm-text h3 { font-size: 15px; font-weight: 700; color: var(--text-main); margin: 0;}
+.comm-text h3 { font-size: 15px; font-weight: 700; margin: 0;}
 .comm-text span { font-size: 12px; font-weight: 600; color: var(--text-muted); }
 
 .comm-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-.price-val { font-size: 16px; font-weight: 700; color: var(--text-main); font-variant-numeric: tabular-nums; }
+.price-val { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
 
-/* Badges */
+/* Status Badges */
 .badge {
-    display: inline-flex; align-items: center; justify-content: center;
-    padding: 4px 8px; border-radius: 8px;
-    font-size: 12px; font-weight: 700; letter-spacing: 0.02em;
+    display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 8px;
+    font-size: 12px; font-weight: 700;
 }
 .badge-up { background-color: var(--color-up-bg); color: var(--color-up); }
 .badge-down { background-color: var(--color-down-bg); color: var(--color-down); }
 
 /* ==========================================================================
-   CHART CARD & SEGMENTED CONTROL
+   CHART CARD & iOS PILL FILTERS
    ========================================================================== */
 .chart-header {
     padding: 24px; border-bottom: 1px solid var(--border-subtle);
     display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
 }
-.chart-title-group h2 { font-size: 24px; font-weight: 800; color: var(--text-main); letter-spacing: -0.03em; margin: 0;}
+.chart-title-group h2 { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; }
 
-/* iOS Style Pill Segmented Control */
 .timeframe-filters {
     display: inline-flex; background-color: var(--bg-body);
     padding: 4px; border-radius: 999px; gap: 2px;
 }
 .filter-btn {
     background: transparent; border: none; color: var(--text-muted); 
-    font-size: 13px; font-weight: 600; font-family: var(--font-family);
-    padding: 8px 16px; border-radius: 999px; cursor: pointer; transition: all 0.2s ease;
+    font-size: 13px; font-weight: 600; padding: 8px 16px; border-radius: 999px;
+    cursor: pointer; transition: all 0.2s ease;
 }
-.filter-btn:hover { color: var(--text-main); }
 .filter-btn.active { background-color: var(--bg-surface); color: var(--text-main); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 
 .chart-container { padding: 24px; height: 440px; width: 100%; position: relative; }
 
-/* Error Overlay */
+/* Modern Hata Katmanı (Overlay) */
 .chart-error-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background-color: rgba(255, 255, 255, 0.7); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    background-color: rgba(255, 255, 255, 0.7); backdrop-filter: blur(8px);
     z-index: 10; text-align: center; border-radius: 0 0 var(--radius-card) var(--radius-card);
 }
-.chart-error-overlay svg { width: 48px; height: 48px; stroke: var(--text-muted); margin-bottom: 16px; }
-.chart-error-overlay h3 { font-size: 18px; font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
+.chart-error-overlay svg { width: 48px; height: 48px; stroke: var(--text-muted); margin-bottom: 12px; }
+.chart-error-overlay h3 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
 .chart-error-overlay p { font-size: 14px; color: var(--text-muted); font-weight: 500; }
 
 /* ==========================================================================
-   PERFORMANCE STAT CARDS (Grid Layout)
+   PERFORMANCE STAT GRİD
    ========================================================================== */
 .perf-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
     gap: 16px; padding: 24px; background-color: #FAFCFD;
 }
 .perf-stat-card {
     background: var(--bg-surface); border: 1px solid var(--border-subtle);
     border-radius: var(--radius-item); padding: 18px 16px;
-    display: flex; flex-direction: column; gap: 10px;
-    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex; flex-direction: column; gap: 10px; transition: transform 0.2s;
 }
 .perf-stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-card); }
-.perf-stat-card.disabled { opacity: 0.6; pointer-events: none; }
 
-.perf-period { font-size: 13px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.perf-period { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
 .perf-values { display: flex; flex-direction: column; gap: 6px; }
-.perf-change-amount { font-size: 18px; font-weight: 800; font-variant-numeric: tabular-nums; }
-.perf-change-amount.positive { color: var(--text-main); }
-.perf-change-amount.negative { color: var(--text-main); }
-.perf-unavailable { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-top: 4px; }
+.perf-change-amount { font-size: 18px; font-weight: 800; color: var(--text-main); }
 
-/* ==========================================================================
-   RESPONSIVE DESIGN
-   ========================================================================== */
 @media (max-width: 1024px) {
-    .dashboard { grid-template-columns: 1fr; gap: 24px; padding: 0 16px; margin: 24px auto; }
-}
-@media (max-width: 640px) {
-    .topbar-inner { flex-direction: column; height: auto; gap: 16px; padding: 16px 0; }
-    .chart-header { flex-direction: column; align-items: flex-start; padding: 20px; }
-    .timeframe-filters { width: 100%; display: flex; overflow-x: auto; padding-bottom: 4px; }
-    .filter-btn { padding: 8px 12px; flex-shrink: 0; }
-    .perf-grid { grid-template-columns: repeat(2, 1fr); padding: 16px; }
-    .chart-container { height: 340px; padding: 12px; }
+    .dashboard { grid-template-columns: 1fr; gap: 24px; }
 }
