@@ -1,32 +1,31 @@
 /* ==========================================================================
-   BOUTIQUE FINANCIAL JOURNAL / EDITORIAL UX REVISION
+   THE COMMODITY JOURNAL - NİHAİ EDİTORYAL TASARIM
    ========================================================================== */
 :root {
-    /* Backgrounds: Eye-resting contrast */
-    --bg-body: #EAECF0;        /* Soft icy/slate gray for resting eyes */
-    --bg-panel: #FFFFFF;       /* Pure white for panels to pop out */
-    --bg-hover: #F8FAFC;       /* Slight darkening for hover states */
+    /* Backgrounds: Eye-resting pearl/cream */
+    --bg-body: #F3F4F6;        /* Gözü dinlendiren, yumuşak inci grisi */
+    --bg-panel: #FFFFFF;       /* Paneller için saf beyaz */
+    --bg-hover: #F9FAFB;       
     
     /* Borders & Depth */
-    --hairline: rgba(15, 23, 42, 0.06); /* Very elegant, thin separators */
-    --hairline-strong: rgba(15, 23, 42, 0.15); 
-    --shadow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.08); /* Pop-out effect */
+    --border-gray: #E5E7EB;    /* Kartlar için zarif gri kenarlık */
+    --hairline: rgba(15, 23, 42, 0.06); 
+    --shadow-soft: 0 4px 10px rgba(0, 0, 0, 0.04); /* Modern, hafif derinlik */
     
     /* Typography Colors */
-    --ink-black: #0F172A;      /* Deep anthracite / ink */
-    --ink-light: #475569;      /* Muted text for labels */
+    --ink-black: #0F172A;      /* Derin mürekkep siyahı */
+    --ink-light: #64748B;      /* Etiketler için antrasit gri */
     
-    /* Mature Financial Indicators */
-    --sage-green: #386641;     /* Mature Olive/Sage for Up */
-    --terra-red: #bc4749;      /* Mature Terracotta/Brick for Down */
+    /* Editorial Financial Colors */
+    --sage-green: #386641;     /* Olgun zeytin yeşili (Artış) */
+    --terra-red: #BC4749;      /* Olgun kiremit kırmızısı (Düşüş) */
 
     /* Typography System */
     --font-serif: 'Playfair Display', Georgia, serif;
     --font-sans: 'Inter', system-ui, sans-serif;
     --font-mono: 'Roboto Mono', monospace;
     
-    /* Shape */
-    --radius-sharp: 4px;       /* Editorial light curve */
+    --radius-standard: 8px;    /* Kartlar için hafif yuvarlaklık */
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -46,8 +45,9 @@ body {
    ========================================================================== */
 .journal-masthead {
     border-bottom: 2px solid var(--ink-black);
-    padding: 40px 0 24px 0;
-    margin-bottom: 40px;
+    padding: 30px 0 20px 0;
+    margin-bottom: 30px;
+    background-color: var(--bg-panel);
 }
 
 .masthead-inner {
@@ -57,7 +57,7 @@ body {
 .brand { display: flex; flex-direction: column; gap: 4px; }
 .brand-title { 
     font-family: var(--font-serif); 
-    font-size: 36px; 
+    font-size: 34px; 
     font-weight: 800; 
     color: var(--ink-black); 
     line-height: 1; 
@@ -67,7 +67,7 @@ body {
     font-family: var(--font-sans); 
     font-size: 11px; 
     font-weight: 700; 
-    letter-spacing: 0.15em; 
+    letter-spacing: 0.2em; 
     color: var(--ink-light); 
 }
 
@@ -84,49 +84,51 @@ body {
 .live-dot {
     width: 8px; height: 8px; 
     border-radius: 50%;
-    transition: background-color 0.3s ease;
 }
 .market-open { background-color: var(--sage-green); }
 .market-closed { background-color: var(--terra-red); }
 
 /* ==========================================================================
-   LAYOUT & POP-OUT PANELS
+   LAYOUT & PANELS
    ========================================================================== */
 .journal-layout {
     display: grid; 
     grid-template-columns: 340px 1fr; 
-    gap: 40px;
+    gap: 32px;
     padding-bottom: 64px;
 }
 
 .panel-card {
     background-color: var(--bg-panel);
     border: 1px solid var(--hairline);
-    border-radius: var(--radius-sharp);
-    box-shadow: var(--shadow-card);
+    border-radius: 4px;
+    box-shadow: var(--shadow-soft);
 }
 
-.journal-main { display: flex; flex-direction: column; gap: 40px; }
+/* SOL MENÜ UZAMA DÜZELTMESİ (align-self: start) */
+.journal-sidebar {
+    align-self: start;
+    height: max-content;
+}
+
+.journal-main { display: flex; flex-direction: column; gap: 32px; }
 
 .section-header {
-    padding: 20px 24px;
+    padding: 16px 24px;
     border-bottom: 1px solid var(--hairline);
-    background-color: #FFFFFF;
-    border-radius: var(--radius-sharp) var(--radius-sharp) 0 0;
 }
 
 .section-header h2 { 
     font-family: var(--font-serif); 
-    font-size: 19px; 
+    font-size: 18px; 
     font-weight: 700; 
     color: var(--ink-black); 
 }
 
 /* ==========================================================================
-   MARKET OVERVIEW (DIRECTORY LIST)
+   MARKET LIST
    ========================================================================== */
 .market-list { display: flex; flex-direction: column; }
-
 .market-item {
     display: flex; justify-content: space-between; align-items: center;
     padding: 16px 24px; 
@@ -137,48 +139,25 @@ body {
 }
 .market-item:last-child { border-bottom: none; }
 .market-item:hover { background-color: var(--bg-hover); }
-
-/* Elegant active state */
 .market-item.active { 
     border-left-color: var(--ink-black); 
     background-color: var(--bg-hover); 
 }
 
 .item-left { display: flex; align-items: center; gap: 12px; }
-.item-icon { font-size: 18px; }
 .item-info { display: flex; flex-direction: column; }
-.item-name { 
-    font-family: var(--font-serif); 
-    font-size: 16px; 
-    font-weight: 700; 
-    color: var(--ink-black); 
-}
-.item-ticker { 
-    font-family: var(--font-sans); 
-    font-size: 11px; 
-    color: var(--ink-light); 
-    letter-spacing: 0.05em; 
-    font-weight: 600;
-}
+.item-name { font-family: var(--font-serif); font-size: 16px; font-weight: 700; }
+.item-ticker { font-size: 11px; font-weight: 600; color: var(--ink-light); letter-spacing: 0.05em; }
 
-.item-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-.item-price { 
-    font-family: var(--font-mono); 
-    font-size: 15px; 
-    font-weight: 600; 
-    color: var(--ink-black); 
-}
-.item-change { 
-    font-family: var(--font-mono); 
-    font-size: 12px; 
-    font-weight: 600; 
-}
+.item-right { display: flex; flex-direction: column; align-items: flex-end; }
+.item-price { font-family: var(--font-mono); font-size: 15px; font-weight: 600; }
+.item-change { font-family: var(--font-mono); font-size: 12px; font-weight: 600; }
 
 .color-up { color: var(--sage-green); }
 .color-down { color: var(--terra-red); }
 
 /* ==========================================================================
-   CHART SECTION & TAB FILTERS
+   CHART SECTION
    ========================================================================== */
 .chart-header {
     display: flex; justify-content: space-between; align-items: flex-end;
@@ -186,39 +165,22 @@ body {
     border-bottom: 1px solid var(--hairline);
     flex-wrap: wrap; gap: 20px;
 }
+.chart-header h2 { font-family: var(--font-serif); font-size: 26px; font-weight: 800; line-height: 1; }
 
-.chart-header h2 { 
-    font-family: var(--font-serif); 
-    font-size: 26px; 
-    font-weight: 800; 
-    color: var(--ink-black); 
-    line-height: 1; 
-}
-
-/* Print-style Tabs */
-.timeframe-tabs { display: flex; gap: 24px; margin-bottom: 2px; }
+.timeframe-tabs { display: flex; gap: 20px; }
 .tab-btn {
-    background: transparent; border: none; padding: 0 0 6px 0;
-    font-family: var(--font-sans); 
-    font-size: 12px; 
-    font-weight: 700; 
-    color: var(--ink-light);
-    cursor: pointer; 
-    position: relative; 
-    letter-spacing: 0.05em;
-    transition: color 0.2s;
+    background: transparent; border: none; padding: 0 0 4px 0;
+    font-size: 12px; font-weight: 700; color: var(--ink-light);
+    cursor: pointer; position: relative; transition: color 0.2s;
 }
-.tab-btn:hover { color: var(--ink-black); }
 .tab-btn.active { color: var(--ink-black); }
 .tab-btn.active::after {
-    content: ''; position: absolute; left: 0; bottom: 0; 
-    width: 100%; height: 2px;
-    background-color: var(--ink-black);
+    content: ''; position: absolute; left: 0; bottom: 0; width: 100%; height: 2px; background-color: var(--ink-black);
 }
 
 .chart-container { padding: 24px; height: 420px; width: 100%; position: relative; }
 
-/* Elegant Error Overlay */
+/* Error Overlay */
 .chart-error-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background-color: rgba(255, 255, 255, 0.95);
@@ -226,82 +188,45 @@ body {
     z-index: 10; text-align: center;
 }
 .overlay-box {
-    border: 1px solid var(--ink-black); 
-    padding: 32px 48px; 
-    background: var(--bg-panel);
-    border-radius: var(--radius-sharp);
+    border: 1px solid var(--ink-black); padding: 30px; background: #fff;
 }
-.overlay-box h3 { 
-    font-family: var(--font-serif); 
-    font-size: 20px; 
-    font-weight: 700; 
-    margin-bottom: 8px; 
-    color: var(--ink-black); 
-}
-.overlay-box p { 
-    font-family: var(--font-sans); 
-    font-size: 13px; 
-    font-weight: 500;
-    color: var(--ink-light); 
-}
+.overlay-box h3 { font-family: var(--font-serif); font-size: 20px; margin-bottom: 8px; }
 
 /* ==========================================================================
-   PERFORMANCE GRID (FLEX-BASED SYMMETRY)
+   PERFORMANCE GRID (MODERN METRIC CARDS)
    ========================================================================== */
 .perf-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 16px;
     padding: 24px;
 }
 
 .perf-block {
-    flex: 1 1 130px; /* Allows perfectly aligned distribution across rows */
-    border-top: 2px solid var(--ink-black);
-    padding-top: 16px;
+    background-color: #FFFFFF;
+    border: 1px solid var(--border-gray);
+    border-radius: var(--radius-standard);
+    padding: 16px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    gap: 6px;
+    gap: 8px;
+    transition: transform 0.2s;
 }
+.perf-block:hover { transform: translateY(-2px); }
 
 .perf-label { 
-    font-family: var(--font-sans); 
-    font-size: 11px; 
-    font-weight: 700; 
-    text-transform: uppercase; 
-    color: var(--ink-light); 
-    letter-spacing: 0.1em; 
+    font-size: 11px; font-weight: 700; color: var(--ink-light); 
+    text-transform: uppercase; letter-spacing: 0.1em; 
 }
-.perf-val { 
-    font-family: var(--font-mono); 
-    font-size: 18px; 
-    font-weight: 600; 
-    color: var(--ink-black); 
-}
-.perf-pct { 
-    font-family: var(--font-mono); 
-    font-size: 13px; 
-    font-weight: 600; 
-}
-.perf-unavailable {
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--ink-light);
-}
+.perf-val { font-family: var(--font-mono); font-size: 18px; font-weight: 700; color: var(--ink-black); }
+.perf-pct { font-family: var(--font-mono); font-size: 13px; font-weight: 600; }
 
-/* ==========================================================================
-   RESPONSIVE
-   ========================================================================== */
 @media (max-width: 1024px) {
-    .journal-layout { grid-template-columns: 1fr; gap: 32px; }
-    .brand-title { font-size: 32px; }
+    .journal-layout { grid-template-columns: 1fr; }
+    .brand-title { font-size: 30px; }
 }
 @media (max-width: 640px) {
     .masthead-inner { flex-direction: column; align-items: flex-start; gap: 16px; }
     .chart-header { flex-direction: column; align-items: flex-start; gap: 20px; }
-    .timeframe-tabs { overflow-x: auto; width: 100%; padding-bottom: 2px; }
-    .chart-container { height: 320px; padding: 16px; }
+    .perf-grid { grid-template-columns: repeat(2, 1fr); }
 }
