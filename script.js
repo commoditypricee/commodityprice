@@ -1,7 +1,6 @@
 /**
  * COMMODITY PRICE TRACKER - SECURE CLOUDFLARE PROXY ARCHITECTURE
- * Y-Axis Precision Fix, Compact Performance Table, and initValues Injection
- * UPDATED: Weekend Data Gap Fix & Professional Error Overlay
+ * Added 1W and 3M Timeframes
  */
 
 // ============================================================================
@@ -11,7 +10,6 @@ const WORKER_URL = "https://yahoo-proxy.commodityprice.workers.dev"; // Kendi UR
 const PROXY_SECRET = "CommoditySecure2026"; 
 
 // initValues Kuralı: Site yüklenirken API cevabı gelene kadar boş durmaması için
-// image_1.png'deki güncel baz fiyatlarla başlangıç verisi oluşturuldu.
 const commodities = [
     { id: 'gold', name: 'Gold', icon: '🥇', ticker: 'GC=F', initPrice: 4752.00, initChange: 67.30, initChangePct: 1.44 },
     { id: 'silver', name: 'Silver', icon: '🥈', ticker: 'SI=F', initPrice: 74.48, initChange: 2.49, initChangePct: 3.46 },
@@ -69,7 +67,6 @@ function startLiveClock() {
     setInterval(updateTime, 1000); 
 }
 
-// Arayüzü ilk verilerle başlatan fonksiyon (initValues)
 function renderInitialValues() {
     const initialData = commodities.map(c => ({
         symbol: c.ticker,
@@ -144,12 +141,14 @@ async function getHistoricalData(ticker, period) {
         return chartCache[ticker][period];
     }
 
-    // YENİLİK: Hafta sonu boşluğunu önlemek için varsayılan 1d yerine 5d çekiyoruz
     let range = '5d'; 
     let interval = '15m';
     
+    // YENİ EKLENEN 1W VE 3M PERİYOTLARI
     switch(period) {
+        case '1W': range = '5d'; interval = '15m'; break;
         case '1M': range = '1mo'; interval = '1d'; break;
+        case '3M': range = '3mo'; interval = '1d'; break;
         case '6M': range = '6mo'; interval = '1d'; break;
         case '1Y': range = '1y'; interval = '1d'; break;
         case '5Y': range = '5y'; interval = '1wk'; break;
@@ -174,7 +173,7 @@ async function getHistoricalData(ticker, period) {
         let targetTimestamps = rawTimestamps;
         let targetPrices = rawPrices;
 
-        // YENİLİK: Sadece en son aktif işlem gününün verilerini filtrele (Hafta sonu boşluğu çözümü)
+        // Hafta sonu boşluğu çözümü
         if (period === '1D' && rawTimestamps.length > 0) {
             const lastTs = rawTimestamps[rawTimestamps.length - 1];
             const lastDateString = new Date(lastTs * 1000).toDateString();
@@ -269,8 +268,10 @@ async function updatePerformanceTable(commodity) {
     const titleEl = document.getElementById('perf-title');
     if (titleEl) titleEl.innerText = `${commodity.name} Performance`;
 
-    const fetchPeriods = ['1D', '1M', '6M', '1Y', '5Y'];
-    const displayNames = ['Today', '1 Month', '6 Months', '1 Year', '5 Years']; 
+    // YENİ EKLENEN 1W VE 3M PERİYOTLARI
+    const fetchPeriods = ['1D', '1W', '1M', '3M', '6M', '1Y', '5Y'];
+    const displayNames = ['Today', '1 Week', '1 Month', '3 Months', '6 Months', '1 Year', '5 Years']; 
+    
     const tbody = document.getElementById('perf-table-body');
     if (!tbody) return;
     
@@ -345,7 +346,6 @@ async function loadChartData(commodity, period) {
     const titleEl = document.getElementById('chart-title');
     const container = document.querySelector('.chart-container');
     
-    // YENİLİK: Varsa eski hata overlay'ini temizle
     const existingOverlay = container.querySelector('.chart-error-overlay');
     if (existingOverlay) existingOverlay.remove();
 
@@ -356,7 +356,6 @@ async function loadChartData(commodity, period) {
         if (titleEl) titleEl.innerText = `${commodity.name} Price`;
         renderChart([...chartData.labels], [...chartData.prices]);
     } catch (error) {
-        // YENİLİK: Başlığı normal bırak, hatayı overlay ile göster
         if (titleEl) titleEl.innerText = `${commodity.name} Price`;
         
         if (chartInstance) {
@@ -454,7 +453,8 @@ function renderChart(labels, dataPoints) {
                         autoSkip: true,
                         callback: function(val, index) {
                             let label = this.getLabelForValue(val);
-                            if (['6M', '1Y', '5Y'].includes(currentPeriod)) {
+                            // YENİ EKLENEN 3M KONTROLÜ
+                            if (['3M', '6M', '1Y', '5Y'].includes(currentPeriod)) {
                                 let parts = label.split(' '); 
                                 if (parts.length === 3) {
                                     return parts[1] + ' ' + parts[2]; 
