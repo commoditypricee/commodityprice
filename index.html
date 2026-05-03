@@ -1,78 +1,81 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Commodity Price Dashboard</title>
+    <title>Commodity Price - Market Journal</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Playfair Display for elegant Serif, Inter for sharp Sans, Roboto Mono for exact digits -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     
-    <header class="topbar">
-        <div class="container topbar-inner">
+    <header class="journal-masthead">
+        <div class="container masthead-inner">
             <div class="brand">
-                <svg class="brand-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="3" y="16" width="12" height="8" rx="4" fill="#3B82F6" stroke="#2563EB" stroke-width="1.5"/>
-                    <path d="M21 24C23.2091 24 25 22.2091 25 20C25 16.5 21 11 21 11C21 11 17 16.5 17 20C17 22.2091 18.7909 24 21 24Z" fill="#F8FAFC" stroke="#0F172A" stroke-width="1.5"/>
-                    <path d="M15 4C15 4 10 7 10 11C10 13 11.5 14.5 15 14.5C18.5 14.5 20 13 20 11C20 7 15 4 15 4Z" fill="#10B981" stroke="#047857" stroke-width="1.5"/>
-                </svg>
-                <div class="brand-text">
-                    <h1>Commodity Price</h1>
-                    <p>Global Markets Dashboard</p>
-                </div>
+                <h1 class="brand-title">Commodity Price</h1>
+                <p class="brand-subtitle">GLOBAL MARKETS DIGITAL EDITION</p>
             </div>
-            <div class="clock-area">
-                <span class="live-indicator"></span>
-                <span id="live-clock">--:--</span>
+            <div class="header-meta">
+                <div class="clock-area">
+                    <span class="live-dot"></span>
+                    <span id="live-clock">--:--</span>
+                </div>
             </div>
         </div>
     </header>
 
-    <div class="container dashboard">
+    <div class="container journal-layout">
         
-        <aside class="panel market-panel">
-            <div class="panel-header">
+        <!-- Left Panel: Market Directory -->
+        <aside class="journal-sidebar">
+            <div class="section-header">
                 <h2>Market Overview</h2>
             </div>
-            <div id="commodity-list" class="overview-list">
-                <!-- script.js tarafından doldurulacak -->
+            <div class="panel-body">
+                <div id="commodity-list" class="market-list">
+                    <!-- script.js will populate this -->
+                </div>
             </div>
         </aside>
 
-        <main class="main-panel">
+        <!-- Main Content: Chart & Performance -->
+        <main class="journal-main">
             
-            <section class="panel chart-card">
+            <section class="journal-section">
                 <div class="chart-header">
-                    <div class="chart-title-group">
-                        <h2 id="chart-title">Loading...</h2>
-                    </div>
-                    <div class="timeframe-filters" id="timeframe-buttons">
-                        <button class="filter-btn active" data-period="1D">1D</button>
-                        <button class="filter-btn" data-period="1W">1W</button>
-                        <button class="filter-btn" data-period="1M">1M</button>
-                        <button class="filter-btn" data-period="3M">3M</button>
-                        <button class="filter-btn" data-period="6M">6M</button>
-                        <button class="filter-btn" data-period="1Y">1Y</button>
-                        <button class="filter-btn" data-period="5Y">5Y</button>
+                    <h2 id="chart-title">Loading...</h2>
+                    <div class="timeframe-tabs" id="timeframe-buttons">
+                        <button class="tab-btn active" data-period="1D">1D</button>
+                        <button class="tab-btn" data-period="1W">1W</button>
+                        <button class="tab-btn" data-period="1M">1M</button>
+                        <button class="tab-btn" data-period="3M">3M</button>
+                        <button class="tab-btn" data-period="6M">6M</button>
+                        <button class="tab-btn" data-period="1Y">1Y</button>
+                        <button class="tab-btn" data-period="5Y">5Y</button>
                     </div>
                 </div>
-                <div class="chart-container" id="chart-container">
-                    <canvas id="commodityChart"></canvas>
+                <div class="panel-body">
+                    <div class="chart-container" id="chart-container">
+                        <canvas id="commodityChart"></canvas>
+                        <!-- Error Overlay will be injected here dynamically -->
+                    </div>
                 </div>
             </section>
 
-            <section class="panel performance-card">
-                <div class="panel-header">
+            <section class="journal-section performance-section">
+                <div class="section-header">
                     <h2 id="perf-title">Price Performance</h2>
                 </div>
-                <div id="perf-cards-container" class="perf-grid">
-                    <!-- script.js tarafından doldurulacak -->
+                <div class="panel-body">
+                    <div id="perf-cards-container" class="perf-grid">
+                        <!-- script.js will populate this -->
+                    </div>
                 </div>
             </section>
 
