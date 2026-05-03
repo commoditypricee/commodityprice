@@ -1,9 +1,9 @@
 /**
- * COMMODITY PRICE TRACKER - FULL COMPATIBILITY FIX
- * All DOM Selectors match index.html perfectly.
+ * COMMODITY PRICE TRACKER - PREMIUM DARK TERMINAL
+ * Full logic retained, 1D weekend logic intact, flawless DOM mapping.
  */
 
-// 1. AYARLAR & DATA
+// 1. SETTINGS & INITIAL DATA
 const WORKER_URL = "https://yahoo-proxy.commodityprice.workers.dev";
 const PROXY_SECRET = "CommoditySecure2026"; 
 
@@ -26,13 +26,13 @@ const fetchOptions = {
     headers: { 'x-proxy-secret': PROXY_SECRET, 'Content-Type': 'application/json' }
 };
 
-// 2. INITIALIZATION
+// 2. INITIALIZATION & CLOCK
 document.addEventListener('DOMContentLoaded', () => {
     startLiveClock(); 
     initApp();
     setupEventListeners();
     
-    // 15 dakikada bir otomatik senkronizasyon
+    // Auto-sync every 15 minutes
     setInterval(() => syncLivePrices(), 15 * 60 * 1000);
 });
 
@@ -69,7 +69,7 @@ async function initApp() {
     }
 }
 
-// 3. DATA FETCHING (HAFTA SONU MANTIĞI DAHİL)
+// 3. SECURE DATA FETCHING & WEEKEND GAP FIX
 async function syncLivePrices() {
     const symbols = commodities.map(c => c.ticker).join(',');
     const endpoint = `${WORKER_URL}/v7/finance/quote?symbols=${symbols}`;
@@ -97,7 +97,7 @@ async function syncLivePrices() {
 async function getHistoricalData(ticker, period) {
     if (chartCache[ticker] && chartCache[ticker][period]) return chartCache[ticker][period];
 
-    let range = '5d'; // Hafta sonu boşluğu için 1D seçildiğinde bile 5d çekiyoruz
+    let range = '5d'; // Baseline fetch for 1D to catch weekend gaps
     let interval = '15m';
     
     switch(period) {
@@ -121,13 +121,13 @@ async function getHistoricalData(ticker, period) {
         let rawTs = result.timestamp;
         let rawPrices = result.indicators.quote[0].close;
         
-        // 1D Periyodu İçin Hafta Sonu Filtreleme
+        // 1D Periyodu İçin Hafta Sonu Filtreleme Mantığı (Korundu)
         if (period === '1D') {
             const lastDateStr = new Date(rawTs[rawTs.length - 1] * 1000).toDateString();
             const filteredTs = [];
             const filteredPr = [];
-            for(let i=0; i<rawTs.length; i++) {
-                if(new Date(rawTs[i]*1000).toDateString() === lastDateStr) {
+            for(let i = 0; i < rawTs.length; i++) {
+                if(new Date(rawTs[i] * 1000).toDateString() === lastDateStr) {
                     filteredTs.push(rawTs[i]);
                     filteredPr.push(rawPrices[i]);
                 }
@@ -149,7 +149,7 @@ async function getHistoricalData(ticker, period) {
     } catch (e) { throw e; }
 }
 
-// 4. UI RENDERING (MODERN CARDS)
+// 4. UI RENDERING (DARK MODE WIDGETS)
 function updateTableDOM() {
     const list = document.getElementById('commodity-list');
     if (!list) return;
@@ -172,7 +172,7 @@ function updateTableDOM() {
                 </div>
             </div>
             <div class="comm-right">
-                <div class="price-val">$${live.price.toLocaleString(undefined,{minimumFractionDigits:2})}</div>
+                <div class="price-val">$${live.price.toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2})}</div>
                 <div class="badge ${isPos ? 'badge-up' : 'badge-down'}">${isPos?'+':''}${live.changePercent.toFixed(2)}%</div>
             </div>
         `;
@@ -189,7 +189,7 @@ async function updatePerformanceTable(commodity) {
     const periods = ['1D', '1W', '1M', '3M', '6M', '1Y', '5Y'];
     const names = ['Today', '1 Week', '1 Month', '3 Months', '6 Months', '1 Year', '5 Years'];
     
-    container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:20px;">Analyzing...</div>';
+    container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:20px; color:var(--text-muted);">Analyzing Data...</div>';
 
     try {
         const live = livePricesMap[commodity.ticker];
@@ -207,12 +207,22 @@ async function updatePerformanceTable(commodity) {
                 amount = live.change >= 0 ? `+$${live.change.toFixed(2)}` : `-$${Math.abs(live.change).toFixed(2)}`;
                 pct = `${live.changePercent.toFixed(2)}%`;
                 isPos = live.changePercent >= 0;
-            } else if (data) {
+            } else if (data && data.prices.length > 0) {
                 const diff = live.price - data.prices[0];
                 const dPct = (diff / data.prices[0]) * 100;
                 amount = diff >= 0 ? `+$${diff.toFixed(2)}` : `-$${Math.abs(diff).toFixed(2)}`;
                 pct = `${dPct.toFixed(2)}%`;
                 isPos = dPct >= 0;
+            } else {
+                // Veri yoksa
+                card.innerHTML = `
+                    <div class="perf-period">${names[i]}</div>
+                    <div class="perf-values">
+                        <span class="perf-change-amount" style="color:var(--text-muted)">N/A</span>
+                    </div>
+                `;
+                container.appendChild(card);
+                return;
             }
 
             card.innerHTML = `
@@ -224,10 +234,10 @@ async function updatePerformanceTable(commodity) {
             `;
             container.appendChild(card);
         });
-    } catch (e) { container.innerHTML = 'Error loading metrics.'; }
+    } catch (e) { container.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--neon-red);">Failed to load performance metrics</div>'; }
 }
 
-// 5. CHART & ERROR HANDLING
+// 5. CHART & ERROR HANDLING (GRADIENT IMPLEMENTATION)
 async function loadChartData(commodity, period) {
     const title = document.getElementById('chart-title');
     const container = document.getElementById('chart-container');
@@ -256,23 +266,66 @@ async function loadChartData(commodity, period) {
 }
 
 function renderChart(labels, prices) {
-    const ctx = document.getElementById('commodityChart').getContext('2d');
+    const canvas = document.getElementById('commodityChart');
+    const ctx = canvas.getContext('2d');
     if (chartInstance) chartInstance.destroy();
+
+    // Çizgi ve Dolgu Gradientleri (Neon Glow Etkisi)
+    let gradientStroke = ctx.createLinearGradient(0, 0, 0, 400);
+    gradientStroke.addColorStop(0, '#8B5CF6'); // Purple
+    gradientStroke.addColorStop(1, '#3B82F6'); // Blue
+
+    let gradientFill = ctx.createLinearGradient(0, 0, 0, 400);
+    gradientFill.addColorStop(0, 'rgba(139, 92, 246, 0.4)');
+    gradientFill.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
 
     chartInstance = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
             datasets: [{
-                data: prices, borderColor: '#3B82F6', borderWidth: 3, pointRadius: 0, tension: 0.1, fill: false
+                data: prices, 
+                borderColor: gradientStroke, 
+                backgroundColor: gradientFill,
+                borderWidth: 3, 
+                pointRadius: 0, 
+                pointHoverRadius: 6,
+                pointBackgroundColor: '#F8FAFC',
+                pointBorderColor: '#8B5CF6',
+                pointBorderWidth: 2,
+                tension: 0.2, 
+                fill: true
             }]
         },
         options: {
             responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(11, 17, 32, 0.9)',
+                    titleColor: '#94A3B8',
+                    bodyColor: '#F8FAFC',
+                    borderColor: 'rgba(255,255,255,0.1)',
+                    borderWidth: 1,
+                    padding: 12,
+                    displayColors: false,
+                    callbacks: {
+                        label: function(context) {
+                            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(context.parsed.y);
+                        }
+                    }
+                }
+            },
+            interaction: { mode: 'index', intersect: false },
             scales: {
-                x: { grid: { display: false }, ticks: { maxTicksLimit: 7, font: { weight: '600' } } },
-                y: { ticks: { callback: v => '$' + v.toLocaleString() } }
+                x: { 
+                    grid: { display: true, color: 'rgba(255,255,255,0.03)', borderDash: [5, 5] }, 
+                    ticks: { color: '#94A3B8', maxTicksLimit: 7, font: { family: 'Inter', weight: '600' } } 
+                },
+                y: { 
+                    grid: { display: true, color: 'rgba(255,255,255,0.03)', borderDash: [5, 5] },
+                    ticks: { color: '#94A3B8', font: { family: 'Inter', weight: '600' }, callback: v => '$' + v.toLocaleString() } 
+                }
             }
         }
     });
