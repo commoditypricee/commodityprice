@@ -1,25 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Commodity Price - Market Journal</title>
+    <title>Commodity Price Journal</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Playfair Display for elegant Serif, Inter for sharp Sans, Roboto Mono for exact digits -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     
-    <header class="journal-masthead">
-        <div class="container masthead-inner">
+    <header class="topbar">
+        <div class="container topbar-inner">
             <div class="brand">
                 <h1 class="brand-title">Commodity Price</h1>
-                <p class="brand-subtitle">GLOBAL MARKETS DIGITAL EDITION</p>
+                <p class="brand-subtitle">EDITORIAL MARKET ANALYSIS</p>
             </div>
             <div class="header-meta">
                 <div class="clock-area">
@@ -30,24 +29,20 @@
         </div>
     </header>
 
-    <div class="container journal-layout">
+    <div class="container dashboard-layout">
         
-        <!-- Left Panel: Market Directory -->
-        <aside class="journal-sidebar">
-            <div class="section-header">
-                <h2>Market Overview</h2>
-            </div>
-            <div class="panel-body">
-                <div id="commodity-list" class="market-list">
-                    <!-- script.js will populate this -->
+        <aside class="sidebar-panel">
+            <div class="panel-card market-overview">
+                <div class="section-header">
+                    <h2>Market Overview</h2>
                 </div>
+                <div id="commodity-list" class="market-list">
+                    </div>
             </div>
         </aside>
 
-        <!-- Main Content: Chart & Performance -->
-        <main class="journal-main">
-            
-            <section class="journal-section">
+        <main class="main-panel">
+            <section class="panel-card chart-card">
                 <div class="chart-header">
                     <h2 id="chart-title">Loading...</h2>
                     <div class="timeframe-tabs" id="timeframe-buttons">
@@ -60,25 +55,18 @@
                         <button class="tab-btn" data-period="5Y">5Y</button>
                     </div>
                 </div>
-                <div class="panel-body">
-                    <div class="chart-container" id="chart-container">
-                        <canvas id="commodityChart"></canvas>
-                        <!-- Error Overlay will be injected here dynamically -->
-                    </div>
+                <div class="chart-container" id="chart-container">
+                    <canvas id="commodityChart"></canvas>
                 </div>
             </section>
 
-            <section class="journal-section performance-section">
+            <section class="panel-card performance-card">
                 <div class="section-header">
                     <h2 id="perf-title">Price Performance</h2>
                 </div>
-                <div class="panel-body">
-                    <div id="perf-cards-container" class="perf-grid">
-                        <!-- script.js will populate this -->
+                <div id="perf-cards-container" class="perf-grid">
                     </div>
-                </div>
             </section>
-
         </main>
     </div>
 
