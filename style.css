@@ -1,31 +1,31 @@
 /* ==========================================================================
-   THE COMMODITY JOURNAL - NİHAİ EDİTORYAL TASARIM & UX POLISH
+   THE COMMODITY JOURNAL - EDITORIAL UX & SPARKLINE ENHANCEMENT
    ========================================================================== */
 :root {
-    /* Backgrounds: Eye-resting pearl/cream */
-    --bg-body: #F3F4F6;        /* Gözü dinlendiren, yumuşak inci grisi */
-    --bg-panel: #FFFFFF;       /* Paneller için saf beyaz */
-    --bg-hover: #F9FAFB;       
+    /* Backgrounds: Eye-resting contrast */
+    --bg-body: #F3F4F6;        
+    --bg-panel: #FFFFFF;       
+    --bg-hover: #F8FAFB;       
     
     /* Borders & Depth */
-    --border-gray: #E5E7EB;    /* Kartlar için zarif gri kenarlık */
+    --border-gray: #E5E7EB;    
     --hairline: rgba(15, 23, 42, 0.06); 
-    --shadow-soft: 0 4px 10px rgba(0, 0, 0, 0.04); /* Modern, hafif derinlik */
+    --shadow-soft: 0 10px 30px -5px rgba(0, 0, 0, 0.08); 
     
     /* Typography Colors */
-    --ink-black: #0F172A;      /* Derin mürekkep siyahı */
-    --ink-light: #64748B;      /* Etiketler için antrasit gri */
+    --ink-black: #0F172A;      
+    --ink-light: #64748B;      
     
     /* Editorial Financial Colors */
-    --sage-green: #386641;     /* Olgun zeytin yeşili (Artış) */
-    --terra-red: #BC4749;      /* Olgun kiremit kırmızısı (Düşüş) */
+    --sage-green: #386641;     
+    --terra-red: #BC4749;      
 
     /* Typography System */
     --font-serif: 'Playfair Display', Georgia, serif;
     --font-sans: 'Inter', system-ui, sans-serif;
     --font-mono: 'Roboto Mono', monospace;
     
-    --radius-standard: 8px;    /* Kartlar için hafif yuvarlaklık */
+    --radius-standard: 8px;    
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -47,7 +47,7 @@ body {
     position: sticky;
     top: 0;
     z-index: 50;
-    background-color: rgba(255, 255, 255, 0.85); /* Slightly transparent */
+    background-color: rgba(255, 255, 255, 0.85); 
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-bottom: 2px solid var(--ink-black);
@@ -55,109 +55,52 @@ body {
     margin-bottom: 30px;
 }
 
-.masthead-inner {
-    display: flex; justify-content: space-between; align-items: flex-end;
-}
+.masthead-inner { display: flex; justify-content: space-between; align-items: flex-end; }
+.brand-title { font-family: var(--font-serif); font-size: 34px; font-weight: 800; line-height: 1; margin: 0; }
+.brand-subtitle { font-family: var(--font-sans); font-size: 11px; font-weight: 700; letter-spacing: 0.2em; color: var(--ink-light); }
 
-.brand { display: flex; flex-direction: column; gap: 4px; }
-.brand-title { 
-    font-family: var(--font-serif); 
-    font-size: 34px; 
-    font-weight: 800; 
-    color: var(--ink-black); 
-    line-height: 1; 
-    letter-spacing: -0.01em; 
-}
-.brand-subtitle { 
-    font-family: var(--font-sans); 
-    font-size: 11px; 
-    font-weight: 700; 
-    letter-spacing: 0.2em; 
-    color: var(--ink-light); 
-}
-
-.header-meta { display: flex; flex-direction: column; align-items: flex-end; }
-.clock-area {
-    display: flex; align-items: center; gap: 10px;
-    font-family: var(--font-mono); 
-    font-size: 15px; /* Artırıldı */
-    font-weight: 700; /* Daha tok */
-    color: var(--ink-black);
-    padding: 4px 8px; /* Dengeli iç boşluk */
-}
-
-/* Dynamic Market Status Dot */
-.live-dot {
-    width: 8px; height: 8px; 
-    border-radius: 50%;
-}
+.clock-area { display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 15px; font-weight: 700; }
+.live-dot { width: 8px; height: 8px; border-radius: 50%; }
 .market-open { background-color: var(--sage-green); }
 .market-closed { background-color: var(--terra-red); }
 
 /* ==========================================================================
    LAYOUT & PANELS
    ========================================================================== */
-.journal-layout {
-    display: grid; 
-    grid-template-columns: 340px 1fr; 
-    gap: 32px;
-    padding-bottom: 64px;
-}
-
-.panel-card {
-    background-color: var(--bg-panel);
-    border: 1px solid var(--hairline);
-    border-radius: 4px;
-    box-shadow: var(--shadow-soft);
-}
-
-/* SOL MENÜ UZAMA DÜZELTMESİ (align-self: start) */
-.journal-sidebar {
-    align-self: start;
-    height: max-content;
-}
-
+.journal-layout { display: grid; grid-template-columns: 360px 1fr; gap: 32px; padding-bottom: 64px; }
+.panel-card { background-color: var(--bg-panel); border: 1px solid var(--hairline); border-radius: 4px; box-shadow: var(--shadow-soft); }
+.journal-sidebar { align-self: start; height: max-content; }
 .journal-main { display: flex; flex-direction: column; gap: 32px; }
 
-.section-header {
-    padding: 16px 24px;
-    border-bottom: 1px solid var(--hairline);
-}
-
-.section-header h2 { 
-    font-family: var(--font-serif); 
-    font-size: 18px; 
-    font-weight: 700; 
-    color: var(--ink-black); 
-}
+.section-header { padding: 16px 24px; border-bottom: 1px solid var(--hairline); }
+.section-header h2 { font-family: var(--font-serif); font-size: 18px; font-weight: 700; }
 
 /* ==========================================================================
-   MARKET LIST
+   MARKET LIST & SPARKLINE ENHANCEMENT
    ========================================================================== */
 .market-list { display: flex; flex-direction: column; }
 .market-item {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 16px 24px; 
-    border-bottom: 1px solid var(--hairline);
-    cursor: pointer; 
-    transition: background-color 0.2s ease;
+    padding: 12px 24px; border-bottom: 1px solid var(--hairline);
+    cursor: pointer; transition: background-color 0.2s ease;
     border-left: 3px solid transparent;
+    height: max-content;
 }
 .market-item:last-child { border-bottom: none; }
 .market-item:hover { background-color: var(--bg-hover); }
-.market-item.active { 
-    border-left-color: var(--ink-black); 
-    background-color: var(--bg-hover); 
-}
+.market-item.active { border-left-color: var(--ink-black); background-color: var(--bg-hover); }
 
-.item-left { display: flex; align-items: center; gap: 12px; }
+.item-left { display: flex; align-items: center; gap: 12px; flex: 1; }
 .item-info { display: flex; flex-direction: column; }
 .item-name { font-family: var(--font-serif); font-size: 16px; font-weight: 700; }
 .item-ticker { font-size: 11px; font-weight: 600; color: var(--ink-light); letter-spacing: 0.05em; }
 
-.item-right { display: flex; flex-direction: column; align-items: flex-end; }
-.item-price { font-family: var(--font-mono); font-size: 15px; font-weight: 600; }
-.item-change { font-family: var(--font-mono); font-size: 12px; font-weight: 600; }
+/* Sparkline Container */
+.sparkline-container { width: 60px; height: 30px; margin: 0 15px; }
+
+.item-right { display: flex; flex-direction: column; align-items: flex-end; min-width: 80px; }
+.item-price { font-family: var(--font-mono); font-size: 15px; font-weight: 700; color: var(--ink-black); }
+.item-change { font-family: var(--font-mono); font-size: 12px; font-weight: 700; }
 
 .color-up { color: var(--sage-green); }
 .color-down { color: var(--terra-red); }
@@ -165,99 +108,30 @@ body {
 /* ==========================================================================
    CHART SECTION
    ========================================================================== */
-.chart-header {
-    display: flex; justify-content: space-between; align-items: flex-end;
-    padding: 24px;
-    border-bottom: 1px solid var(--hairline);
-    flex-wrap: wrap; gap: 20px;
-}
+.chart-header { display: flex; justify-content: space-between; align-items: flex-end; padding: 24px; border-bottom: 1px solid var(--hairline); flex-wrap: wrap; gap: 20px; }
 .chart-header h2 { font-family: var(--font-serif); font-size: 26px; font-weight: 800; line-height: 1; margin: 0; }
-
 .timeframe-tabs { display: flex; gap: 20px; }
-.tab-btn {
-    background: transparent; border: none; padding: 0 0 4px 0;
-    font-size: 12px; font-weight: 700; color: var(--ink-light);
-    cursor: pointer; position: relative; transition: color 0.2s;
-}
+.tab-btn { background: transparent; border: none; padding: 0 0 4px 0; font-size: 12px; font-weight: 700; color: var(--ink-light); cursor: pointer; position: relative; }
 .tab-btn.active { color: var(--ink-black); }
-.tab-btn.active::after {
-    content: ''; position: absolute; left: 0; bottom: 0; width: 100%; height: 2px; background-color: var(--ink-black);
-}
-
+.tab-btn.active::after { content: ''; position: absolute; left: 0; bottom: 0; width: 100%; height: 2px; background-color: var(--ink-black); }
 .chart-container { padding: 24px; height: 420px; width: 100%; position: relative; }
 
 /* Error Overlay */
-.chart-error-overlay {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background-color: rgba(255, 255, 255, 0.95);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 10; text-align: center;
-}
-.overlay-box {
-    border: 1px solid var(--ink-black); padding: 30px; background: #fff;
-}
-.overlay-box h3 { font-family: var(--font-serif); font-size: 20px; margin-bottom: 8px; }
+.chart-error-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; text-align: center; }
+.overlay-box { border: 1px solid var(--ink-black); padding: 30px; background: #fff; }
 
 /* ==========================================================================
-   PERFORMANCE GRID (MODERN METRIC CARDS)
+   PERFORMANCE GRID
    ========================================================================== */
-.perf-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: 16px;
-    padding: 24px;
-}
-
-.perf-block {
-    background-color: #FFFFFF;
-    border: 1px solid var(--border-gray);
-    border-radius: var(--radius-standard);
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    transition: transform 0.2s;
-}
+.perf-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 16px; padding: 24px; }
+.perf-block { background-color: #FFFFFF; border: 1px solid var(--border-gray); border-radius: var(--radius-standard); padding: 16px; display: flex; flex-direction: column; gap: 8px; transition: transform 0.2s; }
 .perf-block:hover { transform: translateY(-2px); }
-
-.perf-label { 
-    font-size: 11px; font-weight: 700; color: var(--ink-light); 
-    text-transform: uppercase; letter-spacing: 0.1em; 
-}
+.perf-label { font-size: 11px; font-weight: 700; color: var(--ink-light); text-transform: uppercase; letter-spacing: 0.1em; }
 .perf-val { font-family: var(--font-mono); font-size: 18px; font-weight: 700; color: var(--ink-black); }
 .perf-pct { font-family: var(--font-mono); font-size: 13px; font-weight: 600; }
-.perf-unavailable {
-    font-family: var(--font-serif);
-    font-style: italic;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--ink-light);
-}
 
-/* ==========================================================================
-   MODERN SKELETON LOADING (SHIMMER ANIMATION)
-   ========================================================================== */
-.skeleton {
-    background: #E5E7EB;
-    background: linear-gradient(110deg, #E5E7EB 8%, #F3F4F6 18%, #E5E7EB 33%);
-    background-size: 200% 100%;
-    animation: 1.5s shimmer linear infinite;
-    color: transparent !important;
-}
+/* SKELETON LOADING */
+.skeleton { background: #E5E7EB; background: linear-gradient(110deg, #E5E7EB 8%, #F3F4F6 18%, #E5E7EB 33%); background-size: 200% 100%; animation: 1.5s shimmer linear infinite; color: transparent !important; }
+@keyframes shimmer { to { background-position-x: -200%; } }
 
-@keyframes shimmer {
-    to { background-position-x: -200%; }
-}
-
-/* ==========================================================================
-   RESPONSIVE
-   ========================================================================== */
-@media (max-width: 1024px) {
-    .journal-layout { grid-template-columns: 1fr; }
-    .brand-title { font-size: 30px; }
-}
-@media (max-width: 640px) {
-    .masthead-inner { flex-direction: column; align-items: flex-start; gap: 16px; }
-    .chart-header { flex-direction: column; align-items: flex-start; gap: 20px; }
-    .perf-grid { grid-template-columns: repeat(2, 1fr); }
-}
+@media (max-width: 1024px) { .journal-layout { grid-template-columns: 1fr; } .brand-title { font-size: 30px; } }
