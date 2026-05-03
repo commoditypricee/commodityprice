@@ -1,26 +1,21 @@
 /* ==========================================================================
-   THE COMMODITY JOURNAL - FINAL EDITORIAL UI/UX
+   THE COMMODITY JOURNAL - FINAL REVISION (EDITORIAL UI/UX)
    ========================================================================== */
 :root {
-    /* Backgrounds: Eye-resting contrast */
     --bg-body: #F3F4F6;        
     --bg-panel: #FFFFFF;       
-    --bg-hover: #F8FAFC;       
+    --bg-hover: #F9FAFB;       
     
-    /* Borders & Depth */
     --border-gray: #E5E7EB;    
     --hairline: rgba(15, 23, 42, 0.06); 
     --shadow-soft: 0 10px 30px -5px rgba(0, 0, 0, 0.08); 
     
-    /* Typography Colors */
     --ink-black: #0F172A;      
     --ink-light: #64748B;      
     
-    /* Editorial Financial Colors */
     --sage-green: #386641;     
     --terra-red: #BC4749;      
 
-    /* Typography System */
     --font-serif: 'Playfair Display', Georgia, serif;
     --font-sans: 'Inter', system-ui, sans-serif;
     --font-mono: 'Roboto Mono', monospace;
@@ -41,7 +36,7 @@ body {
 .container { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
 
 /* ==========================================================================
-   MASTHEAD (STICKY GLASSMORPHISM HEADER)
+   MASTHEAD (STICKY GLASSMORPHISM)
    ========================================================================== */
 .journal-masthead {
     position: sticky;
@@ -65,15 +60,10 @@ body {
 .market-closed { background-color: var(--terra-red); }
 
 /* ==========================================================================
-   LAYOUT & PANELS (POP-OUT EFFECT)
+   LAYOUT & PANELS
    ========================================================================== */
 .journal-layout { display: grid; grid-template-columns: 360px 1fr; gap: 32px; padding-bottom: 64px; }
-.panel-card { 
-    background-color: var(--bg-panel); 
-    border: 1px solid var(--hairline); 
-    border-radius: 4px; 
-    box-shadow: var(--shadow-soft); 
-}
+.panel-card { background-color: var(--bg-panel); border: 1px solid var(--hairline); border-radius: 4px; box-shadow: var(--shadow-soft); }
 .journal-sidebar { align-self: start; height: max-content; }
 .journal-main { display: flex; flex-direction: column; gap: 32px; }
 
@@ -89,6 +79,7 @@ body {
     padding: 12px 24px; border-bottom: 1px solid var(--hairline);
     cursor: pointer; transition: background-color 0.2s ease;
     border-left: 3px solid transparent;
+    height: 72px; /* Fixed height to stabilize list rendering */
 }
 .market-item:last-child { border-bottom: none; }
 .market-item:hover { background-color: var(--bg-hover); }
@@ -99,9 +90,9 @@ body {
 .item-name { font-family: var(--font-serif); font-size: 16px; font-weight: 700; }
 .item-ticker { font-size: 11px; font-weight: 600; color: var(--ink-light); letter-spacing: 0.05em; }
 
-.sparkline-container { width: 60px; height: 30px; margin: 0 15px; }
+.sparkline-container { width: 70px; height: 32px; margin: 0 10px; }
 
-.item-right { display: flex; flex-direction: column; align-items: flex-end; min-width: 80px; }
+.item-right { display: flex; flex-direction: column; align-items: flex-end; min-width: 90px; }
 .item-price { font-family: var(--font-mono); font-size: 15px; font-weight: 700; color: var(--ink-black); }
 .item-change { font-family: var(--font-mono); font-size: 12px; font-weight: 700; }
 
@@ -109,10 +100,11 @@ body {
 .color-down { color: var(--terra-red); }
 
 /* ==========================================================================
-   CHART SECTION
+   CHART SECTION & FILTERS
    ========================================================================== */
 .chart-header { display: flex; justify-content: space-between; align-items: flex-end; padding: 24px; border-bottom: 1px solid var(--hairline); flex-wrap: wrap; gap: 20px; }
 .chart-header h2 { font-family: var(--font-serif); font-size: 26px; font-weight: 800; line-height: 1; margin: 0; }
+
 .timeframe-tabs { display: flex; gap: 20px; }
 .tab-btn { background: transparent; border: none; padding: 0 0 4px 0; font-size: 12px; font-weight: 700; color: var(--ink-light); cursor: pointer; position: relative; }
 .tab-btn.active { color: var(--ink-black); }
@@ -120,7 +112,7 @@ body {
 
 .chart-container { padding: 24px; height: 420px; width: 100%; position: relative; }
 
-/* Error Overlay */
+/* Elegant Error Overlay */
 .chart-error-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; text-align: center; }
 .overlay-box { border: 1px solid var(--ink-black); padding: 30px; background: #fff; }
 
@@ -130,6 +122,7 @@ body {
 .perf-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 16px; padding: 24px; }
 .perf-block { background-color: #FFFFFF; border: 1px solid var(--border-gray); border-radius: var(--radius-standard); padding: 16px; display: flex; flex-direction: column; gap: 8px; transition: transform 0.2s; }
 .perf-block:hover { transform: translateY(-2px); }
+
 .perf-label { font-size: 11px; font-weight: 700; color: var(--ink-light); text-transform: uppercase; letter-spacing: 0.1em; }
 .perf-val { font-family: var(--font-mono); font-size: 18px; font-weight: 700; color: var(--ink-black); }
 .perf-pct { font-family: var(--font-mono); font-size: 13px; font-weight: 600; }
@@ -139,8 +132,4 @@ body {
 @keyframes shimmer { to { background-position-x: -200%; } }
 
 @media (max-width: 1024px) { .journal-layout { grid-template-columns: 1fr; } .brand-title { font-size: 30px; } }
-@media (max-width: 640px) {
-    .masthead-inner { flex-direction: column; align-items: flex-start; gap: 16px; }
-    .chart-header { flex-direction: column; align-items: flex-start; gap: 20px; }
-    .perf-grid { grid-template-columns: repeat(2, 1fr); }
-}
+@media (max-width: 640px) { .masthead-inner { flex-direction: column; align-items: flex-start; gap: 16px; } .chart-header { flex-direction: column; align-items: flex-start; gap: 20px; } .perf-grid { grid-template-columns: repeat(2, 1fr); } }
