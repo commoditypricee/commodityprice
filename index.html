@@ -7,6 +7,7 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Editorial Fonts: Playfair Display (Serif), Inter (Sans), Roboto Mono (Data) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -31,21 +32,27 @@
 
     <div class="container journal-layout">
         
+        <!-- Left Panel: Market Directory -->
         <aside class="journal-sidebar panel-card">
             <div class="section-header">
                 <h2>Market Overview</h2>
             </div>
             <div class="panel-body">
                 <div id="commodity-list" class="market-list">
-                    </div>
+                    <!-- Populated by script.js -->
+                </div>
             </div>
         </aside>
 
+        <!-- Main Content: Chart & Performance -->
         <main class="journal-main">
             
+            <!-- Chart Section -->
             <section class="journal-section panel-card chart-card">
                 <div class="chart-header">
-                    <h2 id="chart-title">Loading...</h2>
+                    <h2 id="chart-title">
+                        <div class="skeleton" style="width: 200px; height: 32px; border-radius: 4px; display: inline-block;"></div>
+                    </h2>
                     <div class="timeframe-tabs" id="timeframe-buttons">
                         <button class="tab-btn active" data-period="1D">1D</button>
                         <button class="tab-btn" data-period="1W">1W</button>
@@ -63,13 +70,15 @@
                 </div>
             </section>
 
+            <!-- Performance Section -->
             <section class="journal-section panel-card performance-section">
                 <div class="section-header">
                     <h2 id="perf-title">Price Performance</h2>
                 </div>
                 <div class="panel-body">
                     <div id="perf-cards-container" class="perf-grid">
-                        </div>
+                        <!-- Populated by script.js -->
+                    </div>
                 </div>
             </section>
 
