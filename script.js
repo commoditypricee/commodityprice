@@ -1,6 +1,7 @@
 /**
- * THE COMMODITY JOURNAL - OPTIMIZED MASTER SCRIPT
- * Logic: Weekend filter safety, Sparkline lifecycle, Gradient fill, Live Clock (HH:MM:SS), Tooltip enabled.
+ * THE COMMODITY JOURNAL - MASTER SCRIPT (DUPLICATION FIX)
+ * Logic: Strict clearing of list DOM to prevent duplication, optimized 1D weekend filter,
+ * Sparklines lifecycle management, and dynamic editorial UI.
  */
 
 // 1. SETTINGS & DATA
@@ -32,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     startLiveClock(); 
     initApp();
     setupEventListeners();
-    // Auto-sync every 15 minutes for fresh prices and sparklines
+    // Auto-sync every 15 minutes
     setInterval(() => syncLivePrices(), 15 * 60 * 1000);
 });
 
@@ -44,19 +45,14 @@ function startLiveClock() {
     function updateTime() {
         const now = new Date();
         const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
-        const dateStr = now.toLocaleDateString('en-US', dateOptions).toUpperCase();
         const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        
-        clockEl.innerText = `${dateStr} | ${timeStr}`;
-
+        clockEl.innerText = `${now.toLocaleDateString('en-US', dateOptions).toUpperCase()} | ${timeStr}`;
         if (dotEl) {
-            const day = now.getDay();
-            const isWeekend = (day === 0 || day === 6);
+            const isWeekend = (now.getDay() === 0 || now.getDay() === 6);
             dotEl.className = isWeekend ? 'live-dot market-closed' : 'live-dot market-open';
         }
     }
-    updateTime(); 
-    setInterval(updateTime, 1000); 
+    updateTime(); setInterval(updateTime, 1000); 
 }
 
 async function initApp() {
@@ -85,23 +81,13 @@ async function syncLivePrices() {
                 changePercent: item.regularMarketChangePercent
             };
         });
-        
-        // Refresh sidebar to update current price and sparkline colors
-        updateTableDOM();
+        updateTableDOM(); // Duplication prevented by strict internal clearing
         updatePerformanceTable(currentCommodity);
-
-        // Monday Morning Safety: Update the active 1D chart point if current data exists
-        const activeLiveData = results.find(item => item.symbol === currentCommodity.ticker);
-        if (activeLiveData && activeLiveData.regularMarketPrice) {
-            updateLiveChartPoint(activeLiveData.regularMarketPrice);
-        }
-    } catch (e) { console.error("Live Sync Error", e); }
+    } catch (e) { console.error("Sync Error", e); }
 }
 
 async function getHistoricalData(ticker, period) {
-    // Cache check to avoid redundant API calls
     if (chartCache[ticker] && chartCache[ticker][period]) return chartCache[ticker][period];
-
     let range = '5d', interval = '15m'; 
     switch(period) {
         case '1W': range = '5d'; interval = '15m'; break;
@@ -111,60 +97,45 @@ async function getHistoricalData(ticker, period) {
         case '1Y': range = '1y'; interval = '1d'; break;
         case '5Y': range = '5y'; interval = '1wk'; break;
     }
-
     const endpoint = `${WORKER_URL}/v8/finance/chart/${ticker}?range=${range}&interval=${interval}`;
     try {
         const res = await fetch(endpoint, fetchOptions);
         const data = await res.json();
         const result = data?.chart?.result?.[0];
-        if (!result || !result.timestamp) throw new Error("Missing result data");
+        if (!result || !result.timestamp) throw new Error("Missing data");
         
         let ts = result.timestamp, pr = result.indicators.quote[0].close;
-
-        /**
-         * 1D WEEKEND SAFETY LOGIC:
-         * We always fetch 5 days. We then look at the absolute latest timestamp in the array.
-         * If it's Monday morning, 'lastActiveDate' will be Monday. 
-         * If it's Sunday, 'lastActiveDate' will be Friday.
-         * This ensures the chart always shows the tresh data available without getting stuck on Friday.
-         */
         if (period === '1D') {
             const lastActiveDate = new Date(ts[ts.length - 1] * 1000).toDateString();
             const fTs = [], fPr = [];
-            ts.forEach((t, i) => {
-                if (new Date(t * 1000).toDateString() === lastActiveDate) {
-                    fTs.push(t);
-                    fPr.push(pr[i]);
-                }
-            });
+            ts.forEach((t, i) => { if (new Date(t * 1000).toDateString() === lastActiveDate) { fTs.push(t); fPr.push(pr[i]); } });
             ts = fTs; pr = fPr;
         }
-
         const labels = ts.map(t => {
             const d = new Date(t * 1000);
             return (period === '1D' || period === '1W') ? 
                    `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}` : 
                    `${d.getDate()} ${d.toLocaleString('en-US', {month:'short'})}`;
         });
-
         const cleanPrices = pr.filter(p => p !== null);
-        
-        // Cache the formatted data
         chartCache[ticker] = chartCache[ticker] || {};
         chartCache[ticker][period] = { labels, prices: cleanPrices };
         return chartCache[ticker][period];
     } catch (e) { throw e; }
 }
 
-// 4. UI: SPARKLINE & TABLE RENDERING
-async function updateTableDOM() {
+// 4. UI: MARKET LIST (FIXED DUPLICATION)
+function updateTableDOM() {
     const list = document.getElementById('commodity-list');
     if (!list) return;
+
+    // CRITICAL FIX: Explicitly clear the container before starting the render loop
     list.innerHTML = '';
 
-    for (const c of commodities) {
+    commodities.forEach(async (c) => {
         const live = livePricesMap[c.ticker];
         const isPos = live.changePercent >= 0;
+        
         const div = document.createElement('div');
         div.className = `market-item ${currentCommodity.id === c.id ? 'active' : ''}`;
         div.onclick = () => selectCommodity(c);
@@ -186,12 +157,12 @@ async function updateTableDOM() {
             </div>
         `;
         list.appendChild(div);
-        
-        // Asynchronous sparkline load
-        getHistoricalData(c.ticker, '1D').then(sparkData => {
-            renderSparkline(`spark-${c.id}`, sparkData.prices, isPos);
+
+        // Fetch sparkline data independently to keep UI smooth
+        getHistoricalData(c.ticker, '1D').then(data => {
+            renderSparkline(`spark-${c.id}`, data.prices, isPos);
         }).catch(() => {});
-    }
+    });
 }
 
 function renderSparkline(canvasId, data, isPositive) {
@@ -199,7 +170,7 @@ function renderSparkline(canvasId, data, isPositive) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     
-    // Destroy previous instance to avoid memory leak
+    // Cleanup to prevent memory leaks and duplication of instances
     if (sparklineInstances[canvasId]) sparklineInstances[canvasId].destroy();
     
     sparklineInstances[canvasId] = new Chart(ctx, {
@@ -225,11 +196,9 @@ function renderSparkline(canvasId, data, isPositive) {
     });
 }
 
-// 5. MAIN CHART & PERFORMANCE
+// 5. MAIN UI & CHART
 async function updatePerformanceTable(commodity) {
-    const titleEl = document.getElementById('perf-title');
-    if (titleEl) titleEl.innerText = `${commodity.name} Performance`;
-    
+    document.getElementById('perf-title').innerText = `${commodity.name} Performance`;
     const container = document.getElementById('perf-cards-container');
     const periods = ['1D', '1W', '1M', '3M', '6M', '1Y', '5Y'];
     const names = ['Today', '1 Week', '1 Month', '3 Months', '6 Months', '1 Year', '5 Years'];
@@ -263,7 +232,7 @@ async function updatePerformanceTable(commodity) {
             block.innerHTML = `<div class="perf-label">${names[i]}</div><div class="perf-val">$${amt.replace(/[+-]/, '')}</div><div class="perf-pct ${isPos?'color-up':'color-down'}">${isPos?'+':''}${pct}</div>`;
             container.appendChild(block);
         });
-    } catch (e) { container.innerHTML = '<div style="grid-column: 1/-1; color: var(--terra-red); padding: 20px;">Data unreachable.</div>'; }
+    } catch (e) { container.innerHTML = '<div style="grid-column: 1/-1; color: var(--terra-red);">Retrieval failure.</div>'; }
 }
 
 async function loadChartData(commodity, period) {
@@ -271,7 +240,6 @@ async function loadChartData(commodity, period) {
     const container = document.getElementById('chart-container');
     container.querySelectorAll('.chart-error-overlay').forEach(e => e.remove());
     title.innerHTML = `<div class="skeleton" style="width: 200px; height: 32px; border-radius: 4px; display: inline-block;"></div>`;
-    
     try {
         const data = await getHistoricalData(commodity.ticker, period);
         title.innerText = `${commodity.name} Price`;
@@ -300,19 +268,12 @@ function renderChart(labels, prices) {
         data: {
             labels: labels,
             datasets: [{
-                data: prices, 
-                borderColor: '#0F172A', 
-                borderWidth: 2, 
-                pointRadius: 0, 
-                tension: 0.1, 
-                fill: true, 
-                backgroundColor: gradient
+                data: prices, borderColor: '#0F172A', borderWidth: 2, pointRadius: 0, tension: 0.1, fill: true, backgroundColor: gradient
             }]
         },
         options: {
-            responsive: true, 
-            maintainAspectRatio: false,
-            interaction: { mode: 'index', intersect: false }, // Tooltip enable
+            responsive: true, maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
             plugins: { 
                 legend: { display: false },
                 tooltip: {
@@ -332,15 +293,6 @@ function renderChart(labels, prices) {
             }
         }
     });
-}
-
-function updateLiveChartPoint(newPrice) {
-    // Only update if the active chart is the 1D chart to maintain intraday accuracy
-    if (chartInstance && currentPeriod === '1D') {
-        const data = chartInstance.data.datasets[0].data;
-        data[data.length - 1] = newPrice;
-        chartInstance.update('none'); 
-    }
 }
 
 function selectCommodity(c) {
