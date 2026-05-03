@@ -1,222 +1,302 @@
 /* ==========================================================================
-   CLEAN LIGHT DASHBOARD VARIABLES & RESET
+   BOUTIQUE FINANCIAL JOURNAL / SWISS PRINT THEME
    ========================================================================== */
 :root {
-    --bg-body: #F6F7F9;           /* Soft eye-resting off-white/light gray */
-    --bg-panel: #FFFFFF;          /* Pure white for panels to stand out */
-    --bg-hover: #F8FAFC;          /* Light hover state */
+    /* Backgrounds: Analog Paper Feel */
+    --bg-paper: #F9F8F4;       /* High-end ivory/cream paper */
+    --bg-panel: #FFFFFF;       /* Crisp white for content areas */
+    --bg-hover: #F4F3ED;       /* Slight darkening for hover states */
     
-    --border-soft: rgba(0, 0, 0, 0.08); /* Elegant border */
-    --shadow-panel: 0 4px 15px rgba(0, 0, 0, 0.03); /* Soft uplifting shadow */
+    /* Borders & Lines */
+    --hairline: rgba(0, 0, 0, 0.08); /* Very elegant, thin separators */
+    --hairline-strong: rgba(0, 0, 0, 0.2); 
     
-    --text-main: #0F172A;         /* Deep Slate for high contrast reading */
-    --text-muted: #64748B;        /* Slate 500 for secondary info */
+    /* Typography Colors */
+    --ink-black: #1A1C20;      /* Deep anthracite / ink */
+    --ink-light: #6B7280;      /* Muted text for labels */
     
-    --color-up: #10B981;          /* Emerald 500 */
-    --color-up-bg: rgba(16, 185, 129, 0.1); 
-    --color-down: #EF4444;        /* Red 500 */
-    --color-down-bg: rgba(239, 68, 68, 0.1);
-    --color-chart: #3B82F6;       /* Standard Professional Blue */
+    /* Mature Financial Indicators */
+    --sage-green: #4A6741;     /* Olive/Sage for Up */
+    --terra-red: #A43A2B;      /* Terracotta/Brick for Down */
 
-    --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    /* Typography System */
+    --font-serif: 'Playfair Display', Georgia, serif;
+    --font-sans: 'Inter', system-ui, sans-serif;
+    --font-mono: 'Roboto Mono', monospace;
     
-    --radius-panel: 16px;
-    --radius-item: 12px;
+    /* Shape & Depth */
+    --radius-sharp: 2px;       /* Almost square, print-like edges */
+    --shadow-micro: 0 1px 3px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.01);
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-    background-color: var(--bg-body);
-    color: var(--text-main);
-    font-family: var(--font-family);
+    background-color: var(--bg-paper);
+    color: var(--ink-black);
+    font-family: var(--font-sans);
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
 }
 
-.container { max-width: 1440px; margin: 0 auto; padding: 0 24px; }
+.container { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
 
 /* ==========================================================================
-   PANELS & STRUCTURE
+   MASTHEAD (HEADER)
    ========================================================================== */
-.panel {
-    background-color: var(--bg-panel);
-    border: 1px solid var(--border-soft);
-    border-radius: var(--radius-panel);
-    box-shadow: var(--shadow-panel);
-    overflow: hidden;
+.journal-masthead {
+    border-bottom: 2px solid var(--ink-black);
+    padding: 40px 0 24px 0;
+    margin-bottom: 40px;
 }
 
-.panel-header {
+.masthead-inner {
+    display: flex; justify-content: space-between; align-items: flex-end;
+}
+
+.brand { display: flex; flex-direction: column; gap: 4px; }
+.brand-title { 
+    font-family: var(--font-serif); 
+    font-size: 36px; 
+    font-weight: 800; 
+    color: var(--ink-black); 
+    line-height: 1; 
+    letter-spacing: -0.01em; 
+}
+.brand-subtitle { 
+    font-family: var(--font-sans); 
+    font-size: 11px; 
+    font-weight: 600; 
+    letter-spacing: 0.15em; 
+    color: var(--ink-light); 
+}
+
+.header-meta { display: flex; flex-direction: column; align-items: flex-end; }
+.clock-area {
+    display: flex; align-items: center; gap: 8px;
+    font-family: var(--font-mono); 
+    font-size: 12px; 
+    font-weight: 500;
+    color: var(--ink-light);
+}
+.live-dot {
+    width: 6px; height: 6px; 
+    background-color: var(--ink-black); 
+    border-radius: 50%;
+}
+
+/* ==========================================================================
+   LAYOUT & PANELS
+   ========================================================================== */
+.journal-layout {
+    display: grid; 
+    grid-template-columns: 340px 1fr; 
+    gap: 48px;
+    padding-bottom: 64px;
+}
+
+.journal-sidebar, .journal-section {
+    background-color: var(--bg-panel);
+    border: 1px solid var(--hairline);
+    border-radius: var(--radius-sharp);
+    box-shadow: var(--shadow-micro);
+    display: flex;
+    flex-direction: column;
+}
+
+.journal-main { display: flex; flex-direction: column; gap: 40px; }
+
+.section-header {
     padding: 20px 24px;
-    border-bottom: 1px solid var(--border-soft);
+    border-bottom: 1px solid var(--hairline);
     background-color: #FFFFFF;
 }
 
-.panel-header h2 {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--text-main);
-    margin: 0;
+.section-header h2 { 
+    font-family: var(--font-serif); 
+    font-size: 18px; 
+    font-weight: 700; 
+    color: var(--ink-black); 
 }
+
+.panel-body { padding: 8px 0; }
 
 /* ==========================================================================
-   TOPBAR
+   MARKET OVERVIEW (DIRECTORY LIST)
    ========================================================================== */
-.topbar {
-    background-color: var(--bg-panel);
-    border-bottom: 1px solid var(--border-soft);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-}
+.market-list { display: flex; flex-direction: column; }
 
-.topbar-inner { display: flex; justify-content: space-between; align-items: center; height: 72px; }
-.brand { display: flex; align-items: center; gap: 16px; }
-.brand-icon { width: 36px; height: 36px; }
-.brand-text h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; color: var(--text-main); line-height: 1.2; }
-.brand-text p { font-size: 13px; font-weight: 500; color: var(--text-muted); }
-
-.clock-area {
-    display: flex; align-items: center; gap: 10px;
-    background-color: var(--bg-body);
-    border: 1px solid var(--border-soft);
-    padding: 8px 18px;
-    border-radius: 999px;
-    font-weight: 600; font-size: 14px;
-}
-
-.live-indicator {
-    width: 8px; height: 8px; background-color: var(--color-up); border-radius: 50%;
-    animation: pulse 2s infinite;
-}
-@keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-    70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-}
-
-/* ==========================================================================
-   DASHBOARD LAYOUT
-   ========================================================================== */
-.dashboard {
-    display: grid;
-    grid-template-columns: 360px 1fr;
-    gap: 32px;
-    padding-top: 32px;
-    padding-bottom: 40px;
-    align-items: flex-start;
-}
-
-.main-panel { display: flex; flex-direction: column; gap: 32px; min-width: 0; }
-
-/* ==========================================================================
-   MARKET OVERVIEW LIST
-   ========================================================================== */
-.overview-list { display: flex; flex-direction: column; padding: 12px; gap: 4px; }
-
-.overview-item {
+.market-item {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 16px; border-radius: var(--radius-item);
-    cursor: pointer; transition: all 0.2s ease;
-    border: 1px solid transparent;
+    padding: 16px 24px; 
+    border-bottom: 1px solid var(--hairline);
+    cursor: pointer; 
+    transition: background-color 0.2s ease;
+    border-left: 3px solid transparent;
 }
-.overview-item:hover { background-color: var(--bg-hover); }
-.overview-item.active {
-    background-color: #F0F6FF;
-    border-color: rgba(59, 130, 246, 0.2);
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.05);
+.market-item:last-child { border-bottom: none; }
+.market-item:hover { background-color: var(--bg-hover); }
+
+/* Elegant active state */
+.market-item.active { 
+    border-left-color: var(--ink-black); 
+    background-color: var(--bg-paper); 
 }
 
-.comm-left { display: flex; align-items: center; gap: 14px; }
-.comm-icon { font-size: 22px; }
-.comm-text h3 { font-size: 15px; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 6px; }
-.comm-text span { font-size: 12px; font-weight: 600; color: var(--text-muted); }
-
-.comm-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-.price-val { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
-
-.badge {
-    display: inline-flex; align-items: center; justify-content: center;
-    padding: 4px 8px; border-radius: 6px;
-    font-size: 12px; font-weight: 700;
+.item-left { display: flex; align-items: center; gap: 12px; }
+.item-icon { font-size: 18px; }
+.item-info { display: flex; flex-direction: column; }
+.item-name { 
+    font-family: var(--font-serif); 
+    font-size: 16px; 
+    font-weight: 700; 
+    color: var(--ink-black); 
 }
-.badge-up { background-color: var(--color-up-bg); color: var(--color-up); }
-.badge-down { background-color: var(--color-down-bg); color: var(--color-down); }
+.item-ticker { 
+    font-family: var(--font-sans); 
+    font-size: 11px; 
+    color: var(--ink-light); 
+    letter-spacing: 0.05em; 
+}
+
+.item-right { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.item-price { 
+    font-family: var(--font-mono); 
+    font-size: 15px; 
+    font-weight: 500; 
+    color: var(--ink-black); 
+}
+.item-change { 
+    font-family: var(--font-mono); 
+    font-size: 12px; 
+    font-weight: 500; 
+}
+
+.color-up { color: var(--sage-green); }
+.color-down { color: var(--terra-red); }
 
 /* ==========================================================================
-   CHART CARD & TIME FILTERS
+   CHART SECTION & TAB FILTERS
    ========================================================================== */
 .chart-header {
-    padding: 24px; border-bottom: 1px solid var(--border-soft);
-    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
+    display: flex; justify-content: space-between; align-items: flex-end;
+    padding: 24px;
+    border-bottom: 1px solid var(--hairline);
+    flex-wrap: wrap; gap: 20px;
 }
-.chart-title-group h2 { font-size: 24px; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em; margin: 0; }
 
-.timeframe-filters {
-    display: inline-flex; background-color: var(--bg-body);
-    padding: 4px; border-radius: 999px; gap: 2px;
-    border: 1px solid var(--border-soft);
+.chart-header h2 { 
+    font-family: var(--font-serif); 
+    font-size: 26px; 
+    font-weight: 800; 
+    color: var(--ink-black); 
+    line-height: 1; 
 }
-.filter-btn {
-    background: transparent; border: none; color: var(--text-muted); 
-    font-size: 13px; font-weight: 600; font-family: var(--font-family);
-    padding: 8px 16px; border-radius: 999px; cursor: pointer; transition: all 0.2s ease;
-}
-.filter-btn:hover { color: var(--text-main); }
-.filter-btn.active { background-color: var(--bg-panel); color: var(--text-main); box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
 
-.chart-container { padding: 24px; height: 420px; width: 100%; position: relative; }
+/* Print-style Tabs */
+.timeframe-tabs { display: flex; gap: 24px; margin-bottom: 2px; }
+.tab-btn {
+    background: transparent; border: none; padding: 0 0 6px 0;
+    font-family: var(--font-sans); 
+    font-size: 12px; 
+    font-weight: 600; 
+    color: var(--ink-light);
+    cursor: pointer; 
+    position: relative; 
+    letter-spacing: 0.05em;
+    transition: color 0.2s;
+}
+.tab-btn:hover { color: var(--ink-black); }
+.tab-btn.active { color: var(--ink-black); }
+.tab-btn.active::after {
+    content: ''; position: absolute; left: 0; bottom: 0; 
+    width: 100%; height: 2px;
+    background-color: var(--ink-black);
+}
+
+.chart-container { padding: 16px 24px 24px 24px; height: 400px; width: 100%; position: relative; }
 
 /* Elegant Error Overlay */
 .chart-error-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(249, 248, 244, 0.9);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background-color: rgba(255, 255, 255, 0.75); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    z-index: 10; text-align: center; border-radius: 0 0 var(--radius-panel) var(--radius-panel);
+    z-index: 10; text-align: center;
 }
-.chart-error-overlay svg { width: 48px; height: 48px; stroke: var(--text-muted); margin-bottom: 16px; }
-.chart-error-overlay h3 { font-size: 18px; font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
-.chart-error-overlay p { font-size: 14px; color: var(--text-muted); font-weight: 500; }
+.overlay-box {
+    border: 1px solid var(--hairline-strong); 
+    padding: 32px 48px; 
+    background: var(--bg-panel);
+    border-radius: var(--radius-sharp);
+    box-shadow: var(--shadow-micro);
+}
+.overlay-box h3 { 
+    font-family: var(--font-serif); 
+    font-size: 20px; 
+    font-weight: 700; 
+    margin-bottom: 8px; 
+    color: var(--ink-black); 
+}
+.overlay-box p { 
+    font-family: var(--font-sans); 
+    font-size: 13px; 
+    color: var(--ink-light); 
+}
 
 /* ==========================================================================
-   PERFORMANCE STATS GRID (STRUCTURED LAYOUT)
+   PERFORMANCE GRID (WIDGETS)
    ========================================================================== */
+.performance-section .panel-body { padding: 24px; }
+
 .perf-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: 16px;
-    padding: 24px;
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 24px;
 }
 
-.perf-stat-card {
-    background: var(--bg-panel);
-    border: 1px solid var(--border-soft);
-    border-radius: var(--radius-item);
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: 12px;
+.perf-block {
+    display: flex; flex-direction: column; gap: 6px;
+    border-top: 1px solid var(--hairline-strong);
+    padding-top: 12px;
 }
 
-.perf-period { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
-.perf-values { display: flex; flex-direction: column; gap: 6px; }
-.perf-change-amount { font-size: 18px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--text-main); }
-.perf-unavailable { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+.perf-label { 
+    font-family: var(--font-sans); 
+    font-size: 10px; 
+    font-weight: 600; 
+    text-transform: uppercase; 
+    color: var(--ink-light); 
+    letter-spacing: 0.1em; 
+}
+.perf-val { 
+    font-family: var(--font-mono); 
+    font-size: 16px; 
+    font-weight: 500; 
+    color: var(--ink-black); 
+}
+.perf-pct { 
+    font-family: var(--font-mono); 
+    font-size: 12px; 
+    font-weight: 500; 
+}
+.perf-unavailable {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink-light);
+}
 
 /* ==========================================================================
    RESPONSIVE
    ========================================================================== */
 @media (max-width: 1024px) {
-    .dashboard { grid-template-columns: 1fr; gap: 24px; padding: 24px 16px; }
+    .journal-layout { grid-template-columns: 1fr; gap: 32px; padding: 0 16px; }
+    .brand-title { font-size: 28px; }
 }
 @media (max-width: 640px) {
-    .topbar-inner { flex-direction: column; height: auto; gap: 16px; padding: 16px 0; }
-    .chart-header { flex-direction: column; align-items: flex-start; padding: 20px; }
-    .timeframe-filters { width: 100%; display: flex; overflow-x: auto; padding-bottom: 4px; }
-    .filter-btn { padding: 8px 12px; flex-shrink: 0; }
-    .perf-grid { grid-template-columns: repeat(2, 1fr); padding: 16px; }
-    .chart-container { height: 320px; padding: 12px; }
+    .masthead-inner { flex-direction: column; align-items: flex-start; gap: 16px; }
+    .chart-header { flex-direction: column; align-items: flex-start; gap: 20px; }
+    .timeframe-tabs { overflow-x: auto; width: 100%; padding-bottom: 2px; }
+    .perf-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .chart-container { height: 320px; padding: 16px; }
 }
