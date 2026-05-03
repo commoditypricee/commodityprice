@@ -1,48 +1,49 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Commodity Price Journal</title>
+    <title>Commodity Price - Market Journal</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     
-    <header class="topbar">
-        <div class="container topbar-inner">
+    <header class="journal-masthead">
+        <div class="container masthead-inner">
             <div class="brand">
                 <h1 class="brand-title">Commodity Price</h1>
                 <p class="brand-subtitle">EDITORIAL MARKET ANALYSIS</p>
             </div>
             <div class="header-meta">
                 <div class="clock-area">
-                    <span class="live-dot"></span>
-                    <span id="live-clock">--:--</span>
+                    <span class="live-dot" id="market-status-dot"></span>
+                    <span id="live-clock">--:--:--</span>
                 </div>
             </div>
         </div>
     </header>
 
-    <div class="container dashboard-layout">
+    <div class="container journal-layout">
         
-        <aside class="sidebar-panel">
-            <div class="panel-card market-overview">
-                <div class="section-header">
-                    <h2>Market Overview</h2>
-                </div>
+        <aside class="journal-sidebar panel-card">
+            <div class="section-header">
+                <h2>Market Overview</h2>
+            </div>
+            <div class="panel-body">
                 <div id="commodity-list" class="market-list">
                     </div>
             </div>
         </aside>
 
-        <main class="main-panel">
-            <section class="panel-card chart-card">
+        <main class="journal-main">
+            
+            <section class="journal-section panel-card">
                 <div class="chart-header">
                     <h2 id="chart-title">Loading...</h2>
                     <div class="timeframe-tabs" id="timeframe-buttons">
@@ -55,18 +56,23 @@
                         <button class="tab-btn" data-period="5Y">5Y</button>
                     </div>
                 </div>
-                <div class="chart-container" id="chart-container">
-                    <canvas id="commodityChart"></canvas>
+                <div class="panel-body">
+                    <div class="chart-container" id="chart-container">
+                        <canvas id="commodityChart"></canvas>
+                        </div>
                 </div>
             </section>
 
-            <section class="panel-card performance-card">
+            <section class="journal-section panel-card performance-section">
                 <div class="section-header">
                     <h2 id="perf-title">Price Performance</h2>
                 </div>
-                <div id="perf-cards-container" class="perf-grid">
-                    </div>
+                <div class="panel-body">
+                    <div id="perf-cards-container" class="perf-grid">
+                        </div>
+                </div>
             </section>
+
         </main>
     </div>
 
