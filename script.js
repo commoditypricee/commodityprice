@@ -1,6 +1,6 @@
 /**
- * COMMODITY PRICE TRACKER - CLEAN LIGHT DASHBOARD
- * Features: Dynamic Title, Perfect DOM Mapping, Grid Performance, Weekend Gap Logic
+ * COMMODITY PRICE TRACKER - BOUTIQUE FINANCIAL JOURNAL
+ * Strict implementation: Dynamic Titles, 1D Weekend Logic, Exact DOM matching.
  */
 
 // ============================================================================
@@ -13,7 +13,7 @@ const commodities = [
     { id: 'gold', name: 'Gold', icon: '🥇', ticker: 'GC=F', initPrice: 4752.00, initChange: 67.30, initChangePct: 1.44 },
     { id: 'silver', name: 'Silver', icon: '🥈', ticker: 'SI=F', initPrice: 74.48, initChange: 2.49, initChangePct: 3.46 },
     { id: 'copper', name: 'Copper', icon: '🥉', ticker: 'HG=F', initPrice: 5.76, initChange: 0.19, initChangePct: 3.50 },
-    { id: 'brent', name: 'Brent Oil', icon: '🛢️', ticker: 'BZ=F', initPrice: 96.15, initChange: -13.12, initChangePct: -12.01 },
+    { id: 'brent', name: 'Brent Crude', icon: '🛢️', ticker: 'BZ=F', initPrice: 96.15, initChange: -13.12, initChangePct: -12.01 },
     { id: 'natgas', name: 'Natural Gas', icon: '💨', ticker: 'NG=F', initPrice: 2.73, initChange: -0.14, initChangePct: -4.74 }
 ];
 
@@ -34,7 +34,6 @@ const fetchOptions = {
 // ============================================================================
 // 2. INITIALIZATION
 // ============================================================================
-
 document.addEventListener('DOMContentLoaded', () => {
     startLiveClock(); 
     initApp();
@@ -53,9 +52,9 @@ function startLiveClock() {
     function updateTime() {
         const now = new Date();
         const dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
-        const dateStr = now.toLocaleDateString('en-US', dateOptions);
+        const dateStr = now.toLocaleDateString('en-US', dateOptions).toUpperCase();
         const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        clockEl.innerText = `${dateStr} | ${timeStr}`;
+        clockEl.innerText = `${dateStr} — ${timeStr}`;
     }
     
     updateTime(); 
@@ -81,14 +80,13 @@ async function initApp() {
         await loadChartData(currentCommodity, currentPeriod); 
         await syncLivePrices(); 
     } catch (error) {
-        console.error("Init error:", error);
+        console.error("Initialization error:", error);
     }
 }
 
 // ============================================================================
-// 3. DATA FETCHING & 1D WEEKEND LOGIC
+// 3. SECURE DATA FETCHING & 1D WEEKEND LOGIC
 // ============================================================================
-
 async function syncLivePrices() {
     const symbols = commodities.map(c => c.ticker).join(',');
     const endpoint = `${WORKER_URL}/v7/finance/quote?symbols=${symbols}`;
@@ -112,7 +110,6 @@ async function syncLivePrices() {
 
         updateTableDOM();
         updatePerformanceTable(currentCommodity);
-
     } catch (error) {
         console.error("Live sync failed:", error.message);
     }
@@ -154,7 +151,7 @@ async function getHistoricalData(ticker, period) {
         let targetTimestamps = rawTimestamps;
         let targetPrices = rawPrices;
 
-        // 1D Weekend Gap Fix Logic
+        // 1D Weekend Gap Fix Logic (Strictly Kept)
         if (period === '1D' && rawTimestamps.length > 0) {
             const lastTs = rawTimestamps[rawTimestamps.length - 1];
             const lastDateString = new Date(lastTs * 1000).toDateString();
@@ -201,9 +198,8 @@ async function getHistoricalData(ticker, period) {
 }
 
 // ============================================================================
-// 4. UI DOM UPDATES
+// 4. UI DOM UPDATES (JOURNAL STYLE)
 // ============================================================================
-
 function updateTableDOM() {
     const listContainer = document.getElementById('commodity-list');
     if (!listContainer) return;
@@ -219,22 +215,22 @@ function updateTableDOM() {
         const isPositive = changePercent >= 0;
 
         const itemDiv = document.createElement('div');
-        itemDiv.className = `overview-item ${currentCommodity.id === comm.id ? 'active' : ''}`;
+        itemDiv.className = `market-item ${currentCommodity.id === comm.id ? 'active' : ''}`;
         itemDiv.onclick = () => selectCommodity(comm);
 
         itemDiv.innerHTML = `
-            <div class="comm-left">
-                <span class="comm-icon">${comm.icon}</span>
-                <div class="comm-text">
-                    <h3>${comm.name}</h3>
-                    <span>${comm.ticker}</span>
+            <div class="item-left">
+                <span class="item-icon">${comm.icon}</span>
+                <div class="item-info">
+                    <span class="item-name">${comm.name}</span>
+                    <span class="item-ticker">${comm.ticker}</span>
                 </div>
             </div>
-            <div class="comm-right">
-                <div class="price-val">$${currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
-                <div class="badge ${isPositive ? 'badge-up' : 'badge-down'}">
+            <div class="item-right">
+                <span class="item-price">${currentPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                <span class="item-change ${isPositive ? 'color-up' : 'color-down'}">
                     ${isPositive ? '+' : ''}${changePercent.toFixed(2)}%
-                </div>
+                </span>
             </div>
         `;
         listContainer.appendChild(itemDiv);
@@ -244,7 +240,7 @@ function updateTableDOM() {
 async function updatePerformanceTable(commodity) {
     const titleEl = document.getElementById('perf-title');
     if (titleEl) {
-        titleEl.innerText = `${commodity.name} Performance`;
+        titleEl.innerText = `${commodity.name} Performance`; // Dynamic Title
     }
 
     const fetchPeriods = ['1D', '1W', '1M', '3M', '6M', '1Y', '5Y'];
@@ -253,7 +249,7 @@ async function updatePerformanceTable(commodity) {
     const container = document.getElementById('perf-cards-container');
     if (!container) return;
     
-    container.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:20px; color:var(--text-muted); font-weight:500;">Analyzing data...</div>';
+    container.innerHTML = '<div style="grid-column: 1/-1; font-family: var(--font-serif); font-style: italic; color: var(--ink-light);">Retrieving market data...</div>';
 
     try {
         const liveData = livePricesMap[commodity.ticker];
@@ -269,8 +265,8 @@ async function updatePerformanceTable(commodity) {
             const data = histDataArray[index];
             const displayName = displayNames[index];
             
-            const card = document.createElement('div');
-            card.className = 'perf-stat-card';
+            const block = document.createElement('div');
+            block.className = 'perf-block';
             
             if (period === '1D') {
                 const change = liveData.change;
@@ -278,20 +274,16 @@ async function updatePerformanceTable(commodity) {
                 const isPositive = change >= 0;
                 const sign = isPositive ? '+' : '';
 
-                card.innerHTML = `
-                    <div class="perf-period">${displayName}</div>
-                    <div class="perf-values">
-                        <span class="perf-change-amount">${sign}$${Math.abs(change).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-                        <span style="align-self: flex-start" class="badge ${isPositive ? 'badge-up' : 'badge-down'}">${sign}${Math.abs(changePct).toFixed(2)}%</span>
-                    </div>
+                block.innerHTML = `
+                    <div class="perf-label">${displayName}</div>
+                    <div class="perf-val">${sign}${Math.abs(change).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                    <div class="perf-pct ${isPositive ? 'color-up' : 'color-down'}">${sign}${Math.abs(changePct).toFixed(2)}%</div>
                 `;
             } else {
                 if (!data || data.prices.length === 0) {
-                    card.innerHTML = `
-                        <div class="perf-period">${displayName}</div>
-                        <div class="perf-values">
-                            <span class="perf-unavailable">Data unavailable</span>
-                        </div>
+                    block.innerHTML = `
+                        <div class="perf-label">${displayName}</div>
+                        <div class="perf-unavailable">—</div>
                     `;
                 } else {
                     const oldPrice = data.prices[0];
@@ -301,26 +293,23 @@ async function updatePerformanceTable(commodity) {
                     const isPositive = change >= 0;
                     const sign = isPositive ? '+' : '';
 
-                    card.innerHTML = `
-                        <div class="perf-period">${displayName}</div>
-                        <div class="perf-values">
-                            <span class="perf-change-amount">${sign}$${Math.abs(change).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-                            <span style="align-self: flex-start" class="badge ${isPositive ? 'badge-up' : 'badge-down'}">${sign}${Math.abs(changePct).toFixed(2)}%</span>
-                        </div>
+                    block.innerHTML = `
+                        <div class="perf-label">${displayName}</div>
+                        <div class="perf-val">${sign}${Math.abs(change).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                        <div class="perf-pct ${isPositive ? 'color-up' : 'color-down'}">${sign}${Math.abs(changePct).toFixed(2)}%</div>
                     `;
                 }
             }
-            container.appendChild(card);
+            container.appendChild(block);
         });
     } catch (error) {
-        container.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:20px; color:var(--color-down); font-weight:500;">Failed to load performance metrics</div>`;
+        container.innerHTML = `<div style="grid-column: 1/-1; font-family: var(--font-serif); color: var(--terra-red);">Data retrieval failed.</div>`;
     }
 }
 
 // ============================================================================
-// 5. CHART & ERROR OVERLAY
+// 5. CHART & ERROR OVERLAY (MINIMALIST INK STYLE)
 // ============================================================================
-
 async function loadChartData(commodity, period) {
     const titleEl = document.getElementById('chart-title');
     const container = document.getElementById('chart-container');
@@ -345,13 +334,10 @@ async function loadChartData(commodity, period) {
         const overlay = document.createElement('div');
         overlay.className = 'chart-error-overlay';
         overlay.innerHTML = `
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="8" x2="12" y2="12"></line>
-                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-            <h3>Market Closed / Data Unavailable</h3>
-            <p>No active trading data found for this period.</p>
+            <div class="overlay-box">
+                <h3>Market Closed</h3>
+                <p>No active trading data found for this period.</p>
+            </div>
         `;
         container.appendChild(overlay);
     }
@@ -364,6 +350,7 @@ function renderChart(labels, dataPoints) {
     const ctx = canvas.getContext('2d');
     if (chartInstance) chartInstance.destroy();
 
+    // Pure, sharp, print-style line without fill gradients
     chartInstance = new Chart(ctx, {
         type: 'line',
         data: {
@@ -371,11 +358,12 @@ function renderChart(labels, dataPoints) {
             datasets: [{
                 label: 'Price',
                 data: dataPoints,
-                borderColor: '#3B82F6', 
+                borderColor: '#1A1C20', // Anthracite / Ink
                 backgroundColor: 'transparent',
-                borderWidth: 2.5, 
+                borderWidth: 2, 
                 pointRadius: 0,
-                pointHoverRadius: 6,
+                pointHoverRadius: 4,
+                pointBackgroundColor: '#1A1C20',
                 fill: false, 
                 tension: 0.1
             }]
@@ -388,14 +376,15 @@ function renderChart(labels, dataPoints) {
                 tooltip: {
                     mode: 'index',
                     intersect: false,
-                    backgroundColor: 'rgba(15, 23, 42, 0.95)', 
-                    titleFont: { family: 'Inter', size: 13, weight: '500' }, 
-                    bodyFont: { family: 'Inter', size: 14, weight: '700' },
-                    padding: 12,
+                    backgroundColor: '#1A1C20', 
+                    titleFont: { family: 'Inter', size: 12, weight: '500' }, 
+                    bodyFont: { family: 'Roboto Mono', size: 13, weight: '600' },
+                    padding: 10,
+                    cornerRadius: 2,
                     displayColors: false, 
                     callbacks: {
                         label: function(context) {
-                            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(context.parsed.y);
+                            return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(context.parsed.y);
                         }
                     }
                 }
@@ -403,10 +392,10 @@ function renderChart(labels, dataPoints) {
             interaction: { mode: 'nearest', axis: 'x', intersect: false },
             scales: {
                 x: { 
-                    grid: { display: true, color: 'rgba(0,0,0,0.05)', drawBorder: false }, 
+                    grid: { display: true, color: 'rgba(0,0,0,0.03)', drawBorder: false }, 
                     ticks: { 
-                        color: '#64748B', 
-                        font: { family: 'Inter', size: 12, weight: '600' },
+                        color: '#6B7280', 
+                        font: { family: 'Roboto Mono', size: 11 },
                         maxTicksLimit: 6, 
                         maxRotation: 0, 
                         autoSkip: true,
@@ -423,12 +412,12 @@ function renderChart(labels, dataPoints) {
                     }
                 },
                 y: {
-                    grid: { display: true, color: 'rgba(0,0,0,0.05)', drawBorder: false },
+                    grid: { display: true, color: 'rgba(0,0,0,0.03)', drawBorder: false },
                     ticks: { 
-                        color: '#64748B', 
-                        font: { family: 'Inter', size: 12, weight: '600' }, 
+                        color: '#6B7280', 
+                        font: { family: 'Roboto Mono', size: 11 }, 
                         callback: function(value) { 
-                            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
+                            return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
                         } 
                     }
                 }
@@ -447,7 +436,7 @@ function selectCommodity(commodity) {
 }
 
 function setupEventListeners() {
-    const buttons = document.querySelectorAll('.filter-btn');
+    const buttons = document.querySelectorAll('.tab-btn');
     buttons.forEach(btn => {
         btn.addEventListener('click', (e) => {
             buttons.forEach(b => b.classList.remove('active'));
