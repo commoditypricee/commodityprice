@@ -85,7 +85,7 @@ body {
 }
 
 /* ==========================================================================
-   DASHBOARD LAYOUT (GRID) - HİZALAMA DÜZELTİLDİ
+   DASHBOARD LAYOUT (GRID)
    ========================================================================== */
 .dashboard {
     display: grid;
@@ -93,11 +93,9 @@ body {
     gap: 24px;
     padding-top: 32px;
     padding-bottom: 40px;
-    /* GÜNCELLEME: İki kolonun da jilet gibi aynı üst hizadan başlamasını garanti eder */
     align-items: flex-start; 
 }
 
-/* GÜNCELLEME: Fazladan margin-top ihtimallerine karşı sıfırlama yapıldı */
 .market-panel, .main-panel, .chart-card, .performance-card {
     margin-top: 0 !important;
 }
@@ -120,7 +118,7 @@ body {
 .panel-header h2 { font-size: 16px; font-weight: 700; color: var(--text-main); letter-spacing: -0.01em; margin: 0; }
 
 /* ==========================================================================
-   MARKET OVERVIEW TABLE (Spacious but Compact)
+   MARKET OVERVIEW TABLE
    ========================================================================== */
 .table-scroller { width: 100%; overflow-x: auto; }
 .overview-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
@@ -159,7 +157,7 @@ body {
 .negative { color: var(--color-down) !important; }
 
 /* ==========================================================================
-   CHART CARD
+   CHART CARD & ERROR OVERLAY (UPDATED)
    ========================================================================== */
 .chart-header {
     padding: 20px 24px;
@@ -197,7 +195,46 @@ body {
 .filter-btn:hover { color: var(--text-main); }
 .filter-btn.active { background-color: var(--bg-surface); color: var(--color-chart); box-shadow: var(--shadow-card); }
 
+/* YENİLİK: Chart Container relative olarak kalsın, Overlay içine otursun */
 .chart-container { padding: 24px; height: 420px; width: 100%; position: relative; }
+
+.chart-error-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 10;
+    text-align: center;
+    padding: 24px;
+}
+
+.chart-error-overlay svg {
+    width: 48px;
+    height: 48px;
+    stroke: var(--text-muted);
+    margin-bottom: 16px;
+}
+
+.chart-error-overlay h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 8px;
+}
+
+.chart-error-overlay p {
+    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
 
 /* ==========================================================================
    COMPACT PERFORMANCE TABLE
