@@ -1,6 +1,6 @@
 /**
  * THE COMMODITY JOURNAL - NİHAİ KONTROL SCRİPTİ
- * Dinamik Başlıklar, HH:MM:SS Saat, Piyasa Durumu, 1D Haftasonu Filtreleme, Skeleton & Gradient Chart.
+ * Dinamik Başlıklar, HH:MM:SS Saat, Piyasa Durumu, 1D Haftasonu Filtreleme, Skeleton, Gradient Chart & Tooltip Restore.
  */
 
 // ============================================================================
@@ -267,8 +267,26 @@ function renderChart(labels, prices) {
             }]
         },
         options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            responsive: true, 
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false }, // Hover/Tooltip restore
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    enabled: true,
+                    backgroundColor: '#0F172A',
+                    titleFont: { family: 'Inter', size: 12, weight: '500' },
+                    bodyFont: { family: 'Roboto Mono', size: 13, weight: '600' },
+                    padding: 10,
+                    cornerRadius: 4,
+                    displayColors: false,
+                    callbacks: {
+                        label: function(context) {
+                            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(context.parsed.y);
+                        }
+                    }
+                }
+            },
             scales: {
                 x: { 
                     grid: { display: false }, 
