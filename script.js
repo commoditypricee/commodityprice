@@ -1,6 +1,7 @@
 /**
  * COMMODITY PRICE TRACKER - SECURE CLOUDFLARE PROXY ARCHITECTURE
  * Y-Axis Precision Fix, Compact Performance Table, and initValues Injection
+ * UPDATED: Weekend Data Gap Fix & Professional Error Overlay
  */
 
 // ============================================================================
@@ -68,7 +69,7 @@ function startLiveClock() {
     setInterval(updateTime, 1000); 
 }
 
-// Arayüzü image_1.png deki verilerle başlatan fonksiyon (initValues)
+// Arayüzü ilk verilerle başlatan fonksiyon (initValues)
 function renderInitialValues() {
     const initialData = commodities.map(c => ({
         symbol: c.ticker,
@@ -87,21 +88,20 @@ function renderInitialValues() {
 
     updateTableDOM(initialData);
     updatePerformanceTable(currentCommodity);
-    // SADELEŞTİRME:updateChartHeaderStats silindi, initial titles renderChart içinde çözüldü
 }
 
 async function initApp() {
     try {
-        renderInitialValues(); // UI'ı ilk verilerle doldur
+        renderInitialValues(); 
         await loadChartData(currentCommodity, currentPeriod); 
-        await syncLivePrices(); // Ardından en güncel API verisini çekip üstüne yaz
+        await syncLivePrices(); 
     } catch (error) {
         console.error("❌ initApp fatal error:", error);
     }
 }
 
 // ============================================================================
-// 3. SECURE DATA FETCHING (DOKUNULMADI)
+// 3. SECURE DATA FETCHING & WEEKEND GAP FIX
 // ============================================================================
 
 async function syncLivePrices() {
@@ -130,7 +130,6 @@ async function syncLivePrices() {
         const activeLiveData = results.find(item => item.symbol === currentCommodity.ticker);
         if (activeLiveData && activeLiveData.regularMarketPrice) {
             updateLiveChartPoint(activeLiveData.regularMarketPrice);
-            // SADELEŞTİRME: updateChartHeaderStats silindi.
         }
         
         updatePerformanceTable(currentCommodity);
@@ -145,7 +144,8 @@ async function getHistoricalData(ticker, period) {
         return chartCache[ticker][period];
     }
 
-    let range = '1d';
+    // YENİLİK: Hafta sonu boşluğunu önlemek için varsayılan 1d yerine 5d çekiyoruz
+    let range = '5d'; 
     let interval = '15m';
     
     switch(period) {
@@ -171,12 +171,32 @@ async function getHistoricalData(ticker, period) {
         const rawTimestamps = result.timestamp;
         const rawPrices = result.indicators.quote[0].close;
         
+        let targetTimestamps = rawTimestamps;
+        let targetPrices = rawPrices;
+
+        // YENİLİK: Sadece en son aktif işlem gününün verilerini filtrele (Hafta sonu boşluğu çözümü)
+        if (period === '1D' && rawTimestamps.length > 0) {
+            const lastTs = rawTimestamps[rawTimestamps.length - 1];
+            const lastDateString = new Date(lastTs * 1000).toDateString();
+            
+            targetTimestamps = [];
+            targetPrices = [];
+
+            for (let i = 0; i < rawTimestamps.length; i++) {
+                const currentDateObj = new Date(rawTimestamps[i] * 1000);
+                if (currentDateObj.toDateString() === lastDateString) {
+                    targetTimestamps.push(rawTimestamps[i]);
+                    targetPrices.push(rawPrices[i]);
+                }
+            }
+        }
+
         const labels = [];
         const prices = [];
 
-        for (let i = 0; i < rawPrices.length; i++) {
-            if (rawPrices[i] !== null) {
-                const dateObj = new Date(rawTimestamps[i] * 1000);
+        for (let i = 0; i < targetPrices.length; i++) {
+            if (targetPrices[i] !== null) {
+                const dateObj = new Date(targetTimestamps[i] * 1000);
                 
                 if (period === '1D') {
                     labels.push(`${dateObj.getHours().toString().padStart(2, '0')}:${dateObj.getMinutes().toString().padStart(2, '0')}`);
@@ -184,7 +204,7 @@ async function getHistoricalData(ticker, period) {
                     labels.push(`${dateObj.getDate()} ${dateObj.toLocaleString('en-US', { month: 'short' })} ${dateObj.getFullYear()}`);
                 }
                 
-                prices.push(rawPrices[i]);
+                prices.push(targetPrices[i]);
             }
         }
 
@@ -245,14 +265,10 @@ function updateTableDOM(apiDataArray) {
     });
 }
 
-// GÜNCELLEME SADELEŞTİRME: Fiyat ve yüzdeyi grafiğin yanına basan bu fonksiyon silindi.
-// HTML'deki id="chart-current-stats" silindi.
-
 async function updatePerformanceTable(commodity) {
     const titleEl = document.getElementById('perf-title');
     if (titleEl) titleEl.innerText = `${commodity.name} Performance`;
 
-    // labelsConsistent Kuralı: Periyot isimleri İngilizce ve Today / 24H aynı mantıkla tutuldu
     const fetchPeriods = ['1D', '1M', '6M', '1Y', '5Y'];
     const displayNames = ['Today', '1 Month', '6 Months', '1 Year', '5 Years']; 
     const tbody = document.getElementById('perf-table-body');
@@ -317,19 +333,22 @@ async function selectCommodity(commodity) {
     if (currentCommodity.id === commodity.id) return;
     currentCommodity = commodity;
     
-    const chartTitleEl = document.getElementById('chart-title');
-    if (chartTitleEl) chartTitleEl.innerText = `Loading ${commodity.name}...`;
-    
-    syncLivePrices(); 
     loadChartData(currentCommodity, currentPeriod);
+    syncLivePrices(); 
 }
 
 // ============================================================================
-// 5. CHART.JS RENDERING
+// 5. CHART.JS RENDERING & ERROR OVERLAY
 // ============================================================================
 
 async function loadChartData(commodity, period) {
     const titleEl = document.getElementById('chart-title');
+    const container = document.querySelector('.chart-container');
+    
+    // YENİLİK: Varsa eski hata overlay'ini temizle
+    const existingOverlay = container.querySelector('.chart-error-overlay');
+    if (existingOverlay) existingOverlay.remove();
+
     if (titleEl) titleEl.innerText = `Loading ${commodity.name}...`;
     
     try {
@@ -337,11 +356,26 @@ async function loadChartData(commodity, period) {
         if (titleEl) titleEl.innerText = `${commodity.name} Price`;
         renderChart([...chartData.labels], [...chartData.prices]);
     } catch (error) {
-        if (titleEl) titleEl.innerHTML = `<span style="color: var(--color-down);">Data unavailable for ${commodity.name}</span>`;
+        // YENİLİK: Başlığı normal bırak, hatayı overlay ile göster
+        if (titleEl) titleEl.innerText = `${commodity.name} Price`;
+        
         if (chartInstance) {
             chartInstance.destroy();
             chartInstance = null;
         }
+
+        const overlay = document.createElement('div');
+        overlay.className = 'chart-error-overlay';
+        overlay.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <h3>Market Closed / Data Unavailable</h3>
+            <p>No active trading data found for this period.</p>
+        `;
+        container.appendChild(overlay);
     }
 }
 
@@ -403,7 +437,6 @@ function renderChart(labels, dataPoints) {
                     displayColors: false, 
                     callbacks: {
                         label: function(context) {
-                            // GÜNCELLEME Tooltip: Fiyat yuvarlama ve formatlama sorunsuz çalışıyor.
                             return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(context.parsed.y);
                         }
                     }
@@ -436,8 +469,6 @@ function renderChart(labels, dataPoints) {
                     ticks: { 
                         color: '#334155', 
                         font: { family: 'Inter', size: 12, weight: '700' }, 
-                        // DÜZELTME Y Ekseni Float Hatası: Bu callback para birimi formatlayıcısı ile güncellendi.
-                        // $5.6000000000000001 gibi uzun küsüratlar engellendi.
                         callback: function(value) { 
                             return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
                         } 
