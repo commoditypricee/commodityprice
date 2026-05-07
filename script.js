@@ -1,7 +1,7 @@
 /**
- * THE COMMODITY JOURNAL - MASTER SCRIPT (DUPLICATION FIX)
+ * THE COMMODITY JOURNAL - MASTER SCRIPT (DUPLICATION FIX & PERFORMANCE OPTIMIZED)
  * Logic: Strict clearing of list DOM to prevent duplication, optimized 1D weekend filter,
- * Sparklines lifecycle management, and dynamic editorial UI.
+ * Sparklines lifecycle management, dynamic editorial UI, and Visibility API integration.
  */
 
 // 1. SETTINGS & DATA
@@ -28,13 +28,26 @@ const fetchOptions = {
     headers: { 'x-proxy-secret': PROXY_SECRET, 'Content-Type': 'application/json' }
 };
 
-// 2. INITIALIZATION
+// 2. INITIALIZATION & PERFORMANCE OPTIMIZATION
 document.addEventListener('DOMContentLoaded', () => {
     startLiveClock(); 
     initApp();
     setupEventListeners();
-    // Auto-sync every 15 minutes
-    setInterval(() => syncLivePrices(), 15 * 60 * 1000);
+    
+    // YENİ EKLENEN KISIM: Sayfa ilk açıldığında zamanlayıcıyı başlat
+    let priceInterval = setInterval(() => syncLivePrices(), 15 * 60 * 1000);
+
+    // YENİ EKLENEN KISIM: Kullanıcı sekmeyi değiştirirse veri çekmeyi durdur, sekmeye dönerse anında güncelle
+    document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+            // Kullanıcı başka sekmeye geçti, motoru durdur
+            clearInterval(priceInterval);
+        } else {
+            // Kullanıcı sitemize geri döndü! Fiyatları anında güncelle ve motoru tekrar çalıştır
+            syncLivePrices();
+            priceInterval = setInterval(() => syncLivePrices(), 15 * 60 * 1000);
+        }
+    });
 });
 
 function startLiveClock() {
