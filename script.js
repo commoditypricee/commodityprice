@@ -1,7 +1,5 @@
 /**
- * THE COMMODITY JOURNAL - MASTER SCRIPT (DUPLICATION FIX, PERFORMANCE OPTIMIZED & WEEKEND SAFE)
- * Logic: Strict clearing of list DOM to prevent duplication, optimized 1D weekend filter,
- * Sparklines lifecycle management, dynamic editorial UI, and Visibility API integration.
+ * THE COMMODITY JOURNAL - MASTER SCRIPT (DYNAMIC NEWS, WEEKEND SAFE)
  */
 
 // 1. SETTINGS & DATA
@@ -32,59 +30,15 @@ const fetchOptions = {
 document.addEventListener('DOMContentLoaded', () => {
     startLiveClock(); 
     initApp();
-    // Haber akışını başlat
-    // DYNAMIC NEWS TICKER LOGIC (Yahoo Finance RSS)
-async function initTicker() {
-    const track = document.getElementById('news-track');
-    if (!track) return;
-
-    // 1. Haberler yüklenirken ekranda şık bir bekleme yazısı çıksın
-    track.innerHTML = `<span class="ticker-item" style="color: #64748B;">Connecting to global news feeds...</span>`;
-
-    try {
-        // 2. Yahoo Finance'in Emtia Haberleri (Altın, Gümüş, Petrol) RSS linkini JSON'a çeviriyoruz
-        const rssUrl = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=GC=F,SI=F,BZ=F";
-        const apiEndpoint = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
-        
-        const response = await fetch(apiEndpoint);
-        const data = await response.json();
-
-        // 3. Veri başarıyla geldiyse, ilk 8 haberi al ve şeride bas
-        if (data.status === 'ok' && data.items.length > 0) {
-            // Haber başlıklarının içindeki olası gereksiz HTML etiketlerini temizliyoruz
-            const cleanHeadlines = data.items.slice(0, 8).map(item => {
-                let tempDiv = document.createElement("div");
-                tempDiv.innerHTML = item.title;
-                return tempDiv.textContent || tempDiv.innerText || "";
-            });
-
-            track.innerHTML = cleanHeadlines.map(news => `<span class="ticker-item">${news}</span>`).join('');
-        } else {
-            throw new Error("No news data");
-        }
-    } catch (error) {
-        console.error("News Fetch Error:", error);
-        // 4. EĞER internet koparsa veya API yanıt vermezse (hata koruması), site boş kalmasın diye acil durum haberleri:
-        const fallbackNews = [
-            "Global markets await next Federal Reserve interest rate decision",
-            "Commodity trading volumes surge amid geopolitical uncertainties",
-            "Analysts closely monitoring crucial resistance levels in precious metals"
-        ];
-        track.innerHTML = fallbackNews.map(news => `<span class="ticker-item">${news}</span>`).join('');
-    }
-}
+    initTicker(); // Canlı Haberleri Başlat
     setupEventListeners();
     
-    // Sayfa ilk açıldığında zamanlayıcıyı başlat
     let priceInterval = setInterval(() => syncLivePrices(), 15 * 60 * 1000);
 
-    // Kullanıcı sekmeyi değiştirirse veri çekmeyi durdur, sekmeye dönerse anında güncelle
     document.addEventListener("visibilitychange", () => {
         if (document.hidden) {
-            // Kullanıcı başka sekmeye geçti, motoru durdur
             clearInterval(priceInterval);
         } else {
-            // Kullanıcı sitemize geri döndü! Fiyatları anında güncelle ve motoru tekrar çalıştır
             syncLivePrices();
             priceInterval = setInterval(() => syncLivePrices(), 15 * 60 * 1000);
         }
@@ -119,7 +73,7 @@ async function initApp() {
     await syncLivePrices();
 }
 
-// 3. FETCHING & LOGIC (WEEKEND GAP SAFETY)
+// 3. FETCHING & LOGIC
 async function syncLivePrices() {
     const symbols = commodities.map(c => c.ticker).join(',');
     const endpoint = `${WORKER_URL}/v7/finance/quote?symbols=${symbols}`;
@@ -135,7 +89,7 @@ async function syncLivePrices() {
                 changePercent: item.regularMarketChangePercent
             };
         });
-        updateTableDOM(); // Duplication prevented by strict internal clearing
+        updateTableDOM(); 
         updatePerformanceTable(currentCommodity);
     } catch (e) { console.error("Sync Error", e); }
 }
@@ -160,12 +114,10 @@ async function getHistoricalData(ticker, period) {
         
         let ts = result.timestamp, pr = result.indicators.quote[0].close;
         if (period === '1D') {
-            // HAFTA SONU KORUMASI: Boş (null) gelen hafta sonu fiyatlarını atla, son dolu işlem gününü (örn. Cuma) bul.
             let lastValidIndex = pr.length - 1;
             while (lastValidIndex >= 0 && pr[lastValidIndex] === null) {
                 lastValidIndex--;
             }
-            // Hata toleransı
             if (lastValidIndex < 0) lastValidIndex = ts.length - 1;
 
             const lastActiveDate = new Date(ts[lastValidIndex] * 1000).toDateString();
@@ -192,12 +144,11 @@ async function getHistoricalData(ticker, period) {
     } catch (e) { throw e; }
 }
 
-// 4. UI: MARKET LIST (FIXED DUPLICATION)
+// 4. UI: MARKET LIST
 function updateTableDOM() {
     const list = document.getElementById('commodity-list');
     if (!list) return;
 
-    // CRITICAL FIX: Explicitly clear the container before starting the render loop
     list.innerHTML = '';
 
     commodities.forEach(async (c) => {
@@ -226,7 +177,6 @@ function updateTableDOM() {
         `;
         list.appendChild(div);
 
-        // Fetch sparkline data independently to keep UI smooth
         getHistoricalData(c.ticker, '1D').then(data => {
             renderSparkline(`spark-${c.id}`, data.prices, isPos);
         }).catch(() => {});
@@ -238,7 +188,6 @@ function renderSparkline(canvasId, data, isPositive) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     
-    // Cleanup to prevent memory leaks and duplication of instances
     if (sparklineInstances[canvasId]) sparklineInstances[canvasId].destroy();
     
     sparklineInstances[canvasId] = new Chart(ctx, {
@@ -381,11 +330,39 @@ function setupEventListeners() {
         });
     });
 }
-// NEWS TICKER LOGIC
-function initTicker() {
+
+// 6. DYNAMIC NEWS TICKER LOGIC (Yahoo Finance RSS)
+async function initTicker() {
     const track = document.getElementById('news-track');
     if (!track) return;
-    
-    // Haberleri HTML içine yerleştir
-    track.innerHTML = newsHeadlines.map(news => `<span class="ticker-item">${news}</span>`).join('');
+
+    track.innerHTML = `<span class="ticker-item" style="color: #64748B;">Connecting to global news feeds...</span>`;
+
+    try {
+        const rssUrl = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=GC=F,SI=F,BZ=F";
+        const apiEndpoint = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
+        
+        const response = await fetch(apiEndpoint);
+        const data = await response.json();
+
+        if (data.status === 'ok' && data.items.length > 0) {
+            const cleanHeadlines = data.items.slice(0, 8).map(item => {
+                let tempDiv = document.createElement("div");
+                tempDiv.innerHTML = item.title;
+                return tempDiv.textContent || tempDiv.innerText || "";
+            });
+
+            track.innerHTML = cleanHeadlines.map(news => `<span class="ticker-item">${news}</span>`).join('');
+        } else {
+            throw new Error("No news data");
+        }
+    } catch (error) {
+        console.error("News Fetch Error:", error);
+        const fallbackNews = [
+            "Global markets await next Federal Reserve interest rate decision",
+            "Commodity trading volumes surge amid geopolitical uncertainties",
+            "Analysts closely monitoring crucial resistance levels in precious metals"
+        ];
+        track.innerHTML = fallbackNews.map(news => `<span class="ticker-item">${news}</span>`).join('');
+    }
 }
