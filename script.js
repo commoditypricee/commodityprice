@@ -1,5 +1,5 @@
 /**
- * THE COMMODITY JOURNAL - MASTER SCRIPT (DUPLICATION FIX & PERFORMANCE OPTIMIZED)
+ * THE COMMODITY JOURNAL - MASTER SCRIPT (DUPLICATION FIX, PERFORMANCE OPTIMIZED & WEEKEND SAFE)
  * Logic: Strict clearing of list DOM to prevent duplication, optimized 1D weekend filter,
  * Sparklines lifecycle management, dynamic editorial UI, and Visibility API integration.
  */
@@ -34,10 +34,10 @@ document.addEventListener('DOMContentLoaded', () => {
     initApp();
     setupEventListeners();
     
-    // YENİ EKLENEN KISIM: Sayfa ilk açıldığında zamanlayıcıyı başlat
+    // Sayfa ilk açıldığında zamanlayıcıyı başlat
     let priceInterval = setInterval(() => syncLivePrices(), 15 * 60 * 1000);
 
-    // YENİ EKLENEN KISIM: Kullanıcı sekmeyi değiştirirse veri çekmeyi durdur, sekmeye dönerse anında güncelle
+    // Kullanıcı sekmeyi değiştirirse veri çekmeyi durdur, sekmeye dönerse anında güncelle
     document.addEventListener("visibilitychange", () => {
         if (document.hidden) {
             // Kullanıcı başka sekmeye geçti, motoru durdur
@@ -119,11 +119,25 @@ async function getHistoricalData(ticker, period) {
         
         let ts = result.timestamp, pr = result.indicators.quote[0].close;
         if (period === '1D') {
-            const lastActiveDate = new Date(ts[ts.length - 1] * 1000).toDateString();
+            // HAFTA SONU KORUMASI: Boş (null) gelen hafta sonu fiyatlarını atla, son dolu işlem gününü (örn. Cuma) bul.
+            let lastValidIndex = pr.length - 1;
+            while (lastValidIndex >= 0 && pr[lastValidIndex] === null) {
+                lastValidIndex--;
+            }
+            // Hata toleransı
+            if (lastValidIndex < 0) lastValidIndex = ts.length - 1;
+
+            const lastActiveDate = new Date(ts[lastValidIndex] * 1000).toDateString();
             const fTs = [], fPr = [];
-            ts.forEach((t, i) => { if (new Date(t * 1000).toDateString() === lastActiveDate) { fTs.push(t); fPr.push(pr[i]); } });
+            ts.forEach((t, i) => { 
+                if (new Date(t * 1000).toDateString() === lastActiveDate) { 
+                    fTs.push(t); 
+                    fPr.push(pr[i]); 
+                } 
+            });
             ts = fTs; pr = fPr;
         }
+        
         const labels = ts.map(t => {
             const d = new Date(t * 1000);
             return (period === '1D' || period === '1W') ? 
