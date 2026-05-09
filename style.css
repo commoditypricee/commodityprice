@@ -168,3 +168,61 @@ body {
 @media (max-width: 640px) {
     .disclaimer { font-size: 11px; padding: 0 16px; }
 }
+/* --- NEWS TICKER STYLES --- */
+.news-ticker-container {
+    display: flex;
+    align-items: center;
+    background-color: var(--ink-black, #0f172a);
+    color: #ffffff;
+    height: 40px;
+    font-family: var(--font-sans, 'Inter', sans-serif);
+    font-size: 13px;
+    overflow: hidden;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.ticker-label {
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 0 16px;
+    color: #eab308; /* Altın Sarısı */
+    z-index: 2;
+    background-color: var(--ink-black, #0f172a);
+}
+
+.ticker-content {
+    flex-grow: 1;
+    overflow: hidden;
+    position: relative;
+    white-space: nowrap;
+}
+
+.ticker-track {
+    display: inline-block;
+    white-space: nowrap;
+    /* 30 saniyede bir tur atar, infinite ile sonsuz döner */
+    animation: scrollTicker 35s linear infinite;
+}
+
+/* Mouse üzerine gelince kaymayı durdurur */
+.ticker-content:hover .ticker-track {
+    animation-play-state: paused;
+}
+
+.ticker-item {
+    display: inline-block;
+    margin-right: 48px;
+    font-weight: 500;
+}
+
+/* Başlıkların arasına altın sarısı bir nokta koyar */
+.ticker-item::before {
+    content: "•";
+    color: #eab308;
+    margin-right: 12px;
+}
+
+@keyframes scrollTicker {
+    0% { transform: translateX(100vw); }
+    100% { transform: translateX(-100%); }
+}
