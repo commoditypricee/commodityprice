@@ -15,14 +15,7 @@ const commodities = [
     { id: 'brent', name: 'Brent Crude', icon: '🛢️', ticker: 'BZ=F', initPrice: 96.15, initChange: -13.12, initChangePct: -12.01 },
     { id: 'natgas', name: 'Natural Gas', icon: '💨', ticker: 'NG=F', initPrice: 2.73, initChange: -0.14, initChangePct: -4.74 }
 ];
-// EDITORIAL NEWS HEADLINES
-const newsHeadlines = [
-    "Federal Reserve signals potential rate cuts by Q3 2026",
-    "Gold reaches new resistance levels amid global market uncertainty",
-    "Semiconductor ETFs rally following strong quarterly tech earnings",
-    "Brent Crude stabilizes as supply chain concerns ease in the Middle East",
-    "Silver industrial demand forecasts upgraded for green energy projects"
-];
+
 let currentCommodity = commodities[0];
 let currentPeriod = '1D';
 let chartInstance = null;
@@ -40,7 +33,46 @@ document.addEventListener('DOMContentLoaded', () => {
     startLiveClock(); 
     initApp();
     // Haber akışını başlat
-    initTicker();
+    // DYNAMIC NEWS TICKER LOGIC (Yahoo Finance RSS)
+async function initTicker() {
+    const track = document.getElementById('news-track');
+    if (!track) return;
+
+    // 1. Haberler yüklenirken ekranda şık bir bekleme yazısı çıksın
+    track.innerHTML = `<span class="ticker-item" style="color: #64748B;">Connecting to global news feeds...</span>`;
+
+    try {
+        // 2. Yahoo Finance'in Emtia Haberleri (Altın, Gümüş, Petrol) RSS linkini JSON'a çeviriyoruz
+        const rssUrl = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=GC=F,SI=F,BZ=F";
+        const apiEndpoint = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
+        
+        const response = await fetch(apiEndpoint);
+        const data = await response.json();
+
+        // 3. Veri başarıyla geldiyse, ilk 8 haberi al ve şeride bas
+        if (data.status === 'ok' && data.items.length > 0) {
+            // Haber başlıklarının içindeki olası gereksiz HTML etiketlerini temizliyoruz
+            const cleanHeadlines = data.items.slice(0, 8).map(item => {
+                let tempDiv = document.createElement("div");
+                tempDiv.innerHTML = item.title;
+                return tempDiv.textContent || tempDiv.innerText || "";
+            });
+
+            track.innerHTML = cleanHeadlines.map(news => `<span class="ticker-item">${news}</span>`).join('');
+        } else {
+            throw new Error("No news data");
+        }
+    } catch (error) {
+        console.error("News Fetch Error:", error);
+        // 4. EĞER internet koparsa veya API yanıt vermezse (hata koruması), site boş kalmasın diye acil durum haberleri:
+        const fallbackNews = [
+            "Global markets await next Federal Reserve interest rate decision",
+            "Commodity trading volumes surge amid geopolitical uncertainties",
+            "Analysts closely monitoring crucial resistance levels in precious metals"
+        ];
+        track.innerHTML = fallbackNews.map(news => `<span class="ticker-item">${news}</span>`).join('');
+    }
+}
     setupEventListeners();
     
     // Sayfa ilk açıldığında zamanlayıcıyı başlat
