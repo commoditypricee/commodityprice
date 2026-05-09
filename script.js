@@ -15,7 +15,14 @@ const commodities = [
     { id: 'brent', name: 'Brent Crude', icon: '🛢️', ticker: 'BZ=F', initPrice: 96.15, initChange: -13.12, initChangePct: -12.01 },
     { id: 'natgas', name: 'Natural Gas', icon: '💨', ticker: 'NG=F', initPrice: 2.73, initChange: -0.14, initChangePct: -4.74 }
 ];
-
+// EDITORIAL NEWS HEADLINES
+const newsHeadlines = [
+    "Federal Reserve signals potential rate cuts by Q3 2026",
+    "Gold reaches new resistance levels amid global market uncertainty",
+    "Semiconductor ETFs rally following strong quarterly tech earnings",
+    "Brent Crude stabilizes as supply chain concerns ease in the Middle East",
+    "Silver industrial demand forecasts upgraded for green energy projects"
+];
 let currentCommodity = commodities[0];
 let currentPeriod = '1D';
 let chartInstance = null;
@@ -32,6 +39,8 @@ const fetchOptions = {
 document.addEventListener('DOMContentLoaded', () => {
     startLiveClock(); 
     initApp();
+    // Haber akışını başlat
+    initTicker();
     setupEventListeners();
     
     // Sayfa ilk açıldığında zamanlayıcıyı başlat
@@ -339,4 +348,12 @@ function setupEventListeners() {
             loadChartData(currentCommodity, currentPeriod);
         });
     });
+}
+// NEWS TICKER LOGIC
+function initTicker() {
+    const track = document.getElementById('news-track');
+    if (!track) return;
+    
+    // Haberleri HTML içine yerleştir
+    track.innerHTML = newsHeadlines.map(news => `<span class="ticker-item">${news}</span>`).join('');
 }
