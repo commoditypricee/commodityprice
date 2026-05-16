@@ -226,3 +226,51 @@ body {
     0% { transform: translateX(100vw); }
     100% { transform: translateX(-100%); }
 }
+/* ==========================================================================
+   EDITORIAL / WEEKLY ANALYSIS SECTION (SEO)
+   ========================================================================== */
+.editorial-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.editorial-date { 
+    font-family: var(--font-mono); 
+    font-size: 12px; 
+    font-weight: 700; 
+    color: var(--ink-light); 
+    text-transform: uppercase; 
+    letter-spacing: 0.05em;
+}
+.editorial-body { 
+    padding: 32px 24px; 
+    background-color: #FAFAFA; /* Gazete kağıdı hissiyatı için çok hafif gri ton */
+}
+.editorial-content { 
+    max-width: 850px; /* Okuma konforu (satır uzunluğu) için genişlik sınırı */
+} 
+.article-headline { 
+    font-family: var(--font-serif); 
+    font-size: 22px; 
+    font-weight: 700; 
+    margin-bottom: 16px; 
+    line-height: 1.3; 
+    color: var(--ink-black); 
+}
+.article-text { 
+    font-family: var(--font-sans); 
+    font-size: 15px; 
+    color: #334155; 
+    line-height: 1.7; 
+    margin-bottom: 16px; 
+}
+.article-author { 
+    font-family: var(--font-mono); 
+    font-size: 12px; 
+    font-weight: 700; 
+    color: var(--ink-light); 
+    margin-top: 24px; 
+    font-style: italic; 
+}
